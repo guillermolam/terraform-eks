@@ -1,6 +1,7 @@
 # gitignore for terraform 1.12+
 .venv
-.venv/*
+## add all .venv recursively
+.venv/
 # Local .terraform directories
 .terraform/
 # Local .terraform.lock.hcl files
