@@ -95,7 +95,7 @@ tasks:
     deps: [setup]
     cmds:
       - task: terraform:validate-all
-      - trunk check
+      - trunk check --fix --all
       - echo "Development environment ready!"
 
   validate:
@@ -110,7 +110,7 @@ tasks:
   format:
     desc: Format all code
     cmds:
-      - trunk fmt
+      - trunk fmt --all
       - task: terraform:fmt
       - echo "All code formatted"
 

@@ -21,6 +21,8 @@ runtimes:
 
 lint:
   enabled:
+    - trivy@0.63.0
+    - trivy@0.63.0
     - actionlint@1.7.7
     - golangci-lint2@2.1.6
     - osv-scanner@2.0.2
