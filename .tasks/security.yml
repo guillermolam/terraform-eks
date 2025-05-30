@@ -1,7 +1,7 @@
 # .tasks/security.yml
 # Security tasks for EKS Zero-Trust project
 
-version: '3'
+version: "3"
 
 vars:
   CHECKOV_CONFIG: .checkov.yaml
@@ -50,13 +50,13 @@ tasks:
           find policies/opa/ -name "*.rego" -exec opa fmt --diff {} \;
           find policies/opa/ -name "*.rego" -exec opa test {} \;
         fi
-        
+
         # Validate Sentinel policies
         if command -v sentinel >/dev/null 2>&1 && [ -d "policies/sentinel" ]; then
           echo "Validating Sentinel policies..."
           find policies/sentinel/ -name "*.sentinel" -exec sentinel fmt {} \;
         fi
-        
+
         echo "Policy validation completed"
 
   network-scan:
@@ -68,11 +68,11 @@ tasks:
         if grep -r "0.0.0.0/0" --include="*.tf" modules/; then
           echo "WARNING: Found potential open security groups"
         fi
-        
+
         # Check for proper network segmentation
         echo "Validating network segmentation..."
         python3 scripts/security/validate-network-segmentation.py
-        
+
         echo "Network scan completed"
 
   container-scan:
@@ -84,13 +84,13 @@ tasks:
           # Scan Kubernetes manifests
           find manifests/ -name "*.yaml" -exec trivy config {} \;
         fi
-        
+
         # Validate pod security standards
         if command -v kubectl >/dev/null 2>&1; then
           echo "Validating pod security standards..."
           find manifests/ -name "*.yaml" -exec kubectl --dry-run=client apply -f {} \;
         fi
-        
+
         echo "Container scan completed"
 
   iam-analysis:
@@ -103,11 +103,11 @@ tasks:
         if grep -r "\*" --include="*.json" modules/security/iam/policies/; then
           echo "WARNING: Found wildcard permissions in IAM policies"
         fi
-        
+
         # Validate least privilege principle
         echo "Validating least privilege principle..."
         python3 scripts/security/validate-iam-least-privilege.py
-        
+
         echo "IAM analysis completed"
 
   encryption-check:
@@ -120,11 +120,11 @@ tasks:
         if ! grep -r "encrypted.*=.*true" --include="*.tf" modules/; then
           echo "WARNING: Some resources may not have encryption at rest enabled"
         fi
-        
+
         # Check for encryption in transit
         echo "Checking encryption in transit..."
         python3 scripts/security/validate-encryption.py
-        
+
         echo "Encryption check completed"
 
   threat-model:
@@ -135,11 +135,11 @@ tasks:
         # Analyze attack surface
         echo "Analyzing attack surface..."
         python3 scripts/security/analyze-attack-surface.py
-        
+
         # Generate threat matrix
         echo "Generating threat matrix..."
         python3 scripts/security/generate-threat-matrix.py
-        
+
         echo "Threat model generated in docs/security/threat-model.md"
 
   baseline-check:
@@ -152,11 +152,11 @@ tasks:
           echo "Running CIS Kubernetes benchmark..."
           kube-bench --config-dir /etc/kube-bench/cfg --config /etc/kube-bench/cfg/config.yaml
         fi
-        
+
         # Check AWS security baseline
         echo "Checking AWS security baseline..."
         python3 scripts/security/check-aws-baseline.py
-        
+
         echo "Security baseline check completed"
 
   incident-response:
@@ -170,7 +170,7 @@ tasks:
           echo "ERROR: AlertManager configuration not found"
           exit 1
         fi
-        
+
         # Validate runbooks
         echo "Validating runbooks..."
         for runbook in docs/security/incident-response/*.md; do
@@ -182,7 +182,7 @@ tasks:
             fi
           fi
         done
-        
+
         echo "Incident response validation completed"
 
   penetration-test:
@@ -195,11 +195,11 @@ tasks:
           echo "Running kube-hunter..."
           kube-hunter --remote --quick
         fi
-        
+
         # Run basic security tests
         echo "Running basic security tests..."
         python3 scripts/security/basic-pentest.py
-        
+
         echo "Penetration testing completed"
 
   zero-trust-validate:
@@ -213,21 +213,21 @@ tasks:
           echo "ERROR: Network policies directory not found"
           exit 1
         fi
-        
+
         # Check pod security standards
         echo "Validating pod security standards..."
         if ! grep -r "pod-security.kubernetes.io" manifests/security/pod-security/; then
           echo "ERROR: Pod security standards not properly configured"
           exit 1
         fi
-        
+
         # Check RBAC configuration
         echo "Validating RBAC configuration..."
         if [ ! -d "manifests/security/rbac" ]; then
           echo "ERROR: RBAC configuration not found"
           exit 1
         fi
-        
+
         echo "Zero-trust validation completed"
 
   security-report:
@@ -237,16 +237,16 @@ tasks:
         echo "Generating security report..."
         REPORT_DIR="reports/security/$(date +%Y%m%d_%H%M%S)"
         mkdir -p "$REPORT_DIR"
-        
+
         # Run all scans and collect results
         task security:scan-code > "$REPORT_DIR/code-scan.txt" 2>&1 || true
         task security:vulnerability-scan > "$REPORT_DIR/vulnerability-scan.txt" 2>&1 || true
         task security:compliance-check > "$REPORT_DIR/compliance-check.txt" 2>&1 || true
         task security:secret-scan > "$REPORT_DIR/secret-scan.txt" 2>&1 || true
-        
+
         # Generate summary report
         python3 scripts/security/generate-security-report.py "$REPORT_DIR"
-        
+
         echo "Security report generated in $REPORT_DIR"
 
   update-baselines:
@@ -258,11 +258,11 @@ tasks:
         if command -v detect-secrets >/dev/null 2>&1; then
           detect-secrets scan --update .secrets.baseline
         fi
-        
+
         # Update security policy baselines
         if [ -d "policies/checkov/suppressions" ]; then
           echo "Reviewing Checkov suppressions..."
           find policies/checkov/suppressions/ -name "*.yaml" -mtime +30 -exec echo "WARNING: Suppression file {} is older than 30 days" \;
         fi
-        
+
         echo "Security baselines updated"

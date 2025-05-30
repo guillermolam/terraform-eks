@@ -1,19 +1,24 @@
 #!/usr/bin/env bash
 
 # Upgrade trunk itself
-trunk upgrade -y
+# trunk upgrade -y
 
-# All checks in CI mode (no prompts)
-trunk check --ci
+# Non-interactive checks on changed files
+trunk check --ci # runs linters/checkers, no prompts
 
-# Config sanity-check
+# Sanity‐check your config
 trunk check --ci .trunk/trunk.yaml
 
-# Autofix and skip its prompt
-trunk fix --yes
+# Auto‐format all changed files (this applies fixes)
+trunk fmt
 
-# Formatting check (non-interactive)
-trunk fmt --check
+# Optionally verify formatting only:
+# trunk fmt --check
 
-# Final lint & test pass (non-interactive)
+# Auto‐apply any remaining fixes from checkers
+trunk check --ci --fix
+
+# Final all‐green check
 trunk check --ci
+
+trunk upgrade -y

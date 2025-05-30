@@ -1,70 +1,15 @@
-version: 3
+# .tasks/terraform.yml
+# Terraform specific tasks
+
+version: "3"
 
 vars:
+  TF_LOG_LEVEL: '{{.TF_LOG_LEVEL | default "ERROR"}}'
   TF_DATA_DIR: .terraform
-  TF_PLUGIN_CACHE_DIR: "{{.HOME}}/.terraform.d/plugin-cache"
 
 tasks:
-  init:
-    desc: Initialize Terraform in current directory
-    cmds:
-      - |
-        echo "Initializing Terraform..."
-        terraform init -upgrade
-        echo "Terraform initialized"
-
-  init-all:
-    desc: Initialize all Terraform configurations
-    cmds:
-      - |
-        echo "Initializing all Terraform configurations..."
-        # Initialize modules
-        find modules/ -name "*.tf" -execdir terraform init -upgrade \;
-
-        # Initialize stacks
-        find stacks/ -name "*.tfstack.hcl" -execdir terraform init -upgrade \;
-
-        # Initialize environments
-        find environments/ -name "*.tf" -execdir terraform init -upgrade \;
-
-        echo "All Terraform configurations initialized"
-
-  validate:
-    desc: Validate Terraform configuration in current directory
-    deps: [init]
-    cmds:
-      - |
-        echo "Validating Terraform configuration..."
-        terraform validate
-        echo "Terraform configuration valid"
-
-  validate-all:
-    desc: Validate all Terraform configurations
-    cmds:
-      - |
-        echo "Validating all Terraform configurations..."
-        # Validate modules
-        for dir in $(find modules/ -name "*.tf" -exec dirname {} \; | sort -u); do
-          echo "Validating $dir..."
-          (cd "$dir" && terraform init -backend=false && terraform validate)
-        done
-
-        # Validate stacks
-        for dir in $(find stacks/ -name "*.tfstack.hcl" -exec dirname {} \; | sort -u); do
-          echo "Validating $dir..."
-          (cd "$dir" && terraform init -backend=false && terraform validate)
-        done
-
-        # Validate environments
-        for dir in $(find environments/ -name "*.tf" -exec dirname {} \; | sort -u); do
-          echo "Validating $dir..."
-          (cd "$dir" && terraform init -backend=false && terraform validate)
-        done
-
-        echo "All configurations validated"
-
   fmt:
-    desc: Format Terraform code
+    desc: Format all Terraform files
     cmds:
       - |
         echo "Formatting Terraform code..."
@@ -72,7 +17,7 @@ tasks:
         echo "Code formatted"
 
   fmt-check:
-    desc: Check if Terraform code is formatted
+    desc: Check if Terraform files are formatted
     cmds:
       - |
         echo "Checking Terraform formatting..."
@@ -82,205 +27,135 @@ tasks:
         fi
         echo "Code is properly formatted"
 
-  plan:
-    desc: Plan Terraform deployment for specific environment
-    vars:
-      ENV: '{{.ENV | default "dev"}}'
-    deps: [validate]
+  validate-all:
+    desc: Validate all Terraform configurations
     cmds:
       - |
-        echo " Planning deployment for {{.ENV}} environment..."
-        cd environments/{{.ENV}}
-        terraform plan -out={{.ENV}}.tfplan
-        echo " Plan completed for {{.ENV}}"
+        echo "Validating all Terraform configurations..."
+
+        # Validate modules (if they exist)
+        if [ -d "modules/" ]; then
+          for dir in $(find modules/ -name "*.tf" -exec dirname {} \; | sort -u); do
+            echo "Validating $dir..."
+            (cd "$dir" && terraform init -backend=false && terraform validate)
+          done
+        else
+          echo "No modules/ directory found, skipping module validation"
+        fi
+
+        # Validate stacks (if they exist)
+        if [ -d "stacks/" ]; then
+          for dir in $(find stacks/ -name "*.tfstack.hcl" -exec dirname {} \; | sort -u); do
+            echo "Validating $dir..."
+            (cd "$dir" && terraform init -backend=false && terraform validate)
+          done
+        else
+          echo "No stacks/ directory found, skipping stack validation"
+        fi
+
+        # Validate environments (if they exist)
+        if [ -d "environments/" ]; then
+          for dir in $(find environments/ -name "*.tf" -exec dirname {} \; | sort -u); do
+            echo "Validating $dir..."
+            (cd "$dir" && terraform init -backend=false && terraform validate)
+          done
+        else
+          echo "No environments/ directory found, skipping environment validation"
+        fi
+
+        echo "All configurations validated"
+
+  init:
+    desc: Initialize Terraform
+    cmds:
+      - terraform init {{.CLI_ARGS}}
+
+  plan:
+    desc: Create execution plan
+    cmds:
+      - terraform plan {{.CLI_ARGS}}
 
   apply:
-    desc: Apply Terraform deployment for specific environment
-    vars:
-      ENV: '{{.ENV | default "dev"}}'
-    deps: [plan]
+    desc: Apply the configuration
     cmds:
-      - |
-        echo " Applying deployment for {{.ENV}} environment..."
-        cd environments/{{.ENV}}
-        terraform apply {{.ENV}}.tfplan
-        echo " Deployment completed for {{.ENV}}"
+      - terraform apply {{.CLI_ARGS}}
 
   destroy:
-    desc: Destroy Terraform deployment for specific environment
-    vars:
-      ENV: '{{.ENV | default "dev"}}'
+    desc: Destroy infrastructure
     cmds:
-      - |
-        echo "  Destroying {{.ENV}} environment..."
-        echo "This will destroy all resources in the {{.ENV}} environment!"
-        read -p "Are you absolutely sure? Type 'destroy-{{.ENV}}' to confirm: " confirm
-        if [ "$confirm" = "destroy-{{.ENV}}" ]; then
-          cd environments/{{.ENV}}
-          terraform destroy -auto-approve
-          echo " Environment {{.ENV}} destroyed"
-        else
-          echo " Destruction cancelled"
-          exit 1
-        fi
-
-  refresh:
-    desc: Refresh Terraform state for specific environment
-    vars:
-      ENV: '{{.ENV | default "dev"}}'
-    cmds:
-      - |
-        echo " Refreshing state for {{.ENV}} environment..."
-        cd environments/{{.ENV}}
-        terraform refresh
-        echo " State refreshed for {{.ENV}}"
-
-  output:
-    desc: Show Terraform outputs for specific environment
-    vars:
-      ENV: '{{.ENV | default "dev"}}'
-    cmds:
-      - |
-        echo " Outputs for {{.ENV}} environment:"
-        cd environments/{{.ENV}}
-        terraform output -json | jq '.'
-
-  state-list:
-    desc: List resources in Terraform state
-    vars:
-      ENV: '{{.ENV | default "dev"}}'
-    cmds:
-      - |
-        echo " Resources in {{.ENV}} state:"
-        cd environments/{{.ENV}}
-        terraform state list
-
-  workspace-list:
-    desc: List Terraform workspaces
-    vars:
-      ENV: '{{.ENV | default "dev"}}'
-    cmds:
-      - |
-        echo " Terraform workspaces:"
-        cd environments/{{.ENV}}
-        terraform workspace list
-
-  upgrade:
-    desc: Upgrade Terraform providers
-    vars:
-      ENV: '{{.ENV | default "dev"}}'
-    cmds:
-      - |
-        echo "Upgrading providers for {{.ENV}}..."
-        cd environments/{{.ENV}}
-        terraform init -upgrade
-        terraform providers lock \
-          -platform=darwin_amd64 \
-          -platform=darwin_arm64 \
-          -platform=linux_amd64 \
-          -platform=linux_arm64 \
-          -platform=windows_amd64
-        echo "Providers upgraded for {{.ENV}}"
-
-  console:
-    desc: Open Terraform console for specific environment
-    vars:
-      ENV: '{{.ENV | default "dev"}}'
-    cmds:
-      - |
-        echo "Opening Terraform console for {{.ENV}}..."
-        cd environments/{{.ENV}}
-        terraform console
-
-  import:
-    desc: Import existing resource into Terraform state
-    vars:
-      ENV: '{{.ENV | default "dev"}}'
-      RESOURCE_TYPE: "{{.RESOURCE_TYPE}}"
-      RESOURCE_NAME: "{{.RESOURCE_NAME}}"
-      RESOURCE_ID: "{{.RESOURCE_ID}}"
-    cmds:
-      - |
-        if [ -z "{{.RESOURCE_TYPE}}" ] || [ -z "{{.RESOURCE_NAME}}" ] || [ -z "{{.RESOURCE_ID}}" ]; then
-          echo "Usage: task terraform:import ENV=dev RESOURCE_TYPE=aws_instance RESOURCE_NAME=example RESOURCE_ID=i-1234567890abcdef0"
-          exit 1
-        fi
-        echo "Importing {{.RESOURCE_TYPE}}.{{.RESOURCE_NAME}} ({{.RESOURCE_ID}}) into {{.ENV}}..."
-        cd environments/{{.ENV}}
-        terraform import {{.RESOURCE_TYPE}}.{{.RESOURCE_NAME}} {{.RESOURCE_ID}}
-        echo "Resource imported successfully"
-
-  taint:
-    desc: Taint a resource for recreation
-    vars:
-      ENV: '{{.ENV | default "dev"}}'
-      RESOURCE: "{{.RESOURCE}}"
-    cmds:
-      - |
-        if [ -z "{{.RESOURCE}}" ]; then
-          echo "Usage: task terraform:taint ENV=dev RESOURCE=aws_instance.example"
-          exit 1
-        fi
-        echo "Tainting {{.RESOURCE}} in {{.ENV}}..."
-        cd environments/{{.ENV}}
-        terraform taint {{.RESOURCE}}
-        echo "Resource tainted"
-
-  untaint:
-    desc: Untaint a resource
-    vars:
-      ENV: '{{.ENV | default "dev"}}'
-      RESOURCE: "{{.RESOURCE}}"
-    cmds:
-      - |
-        if [ -z "{{.RESOURCE}}" ]; then
-          echo " Usage: task terraform:untaint ENV=dev RESOURCE=aws_instance.example"
-          exit 1
-        fi
-        echo "  Untainting {{.RESOURCE}} in {{.ENV}}..."
-        cd environments/{{.ENV}}
-        terraform untaint {{.RESOURCE}}
-        echo " Resource untainted"
-
-  graph:
-    desc: Generate dependency graph
-    vars:
-      ENV: '{{.ENV | default "dev"}}'
-    cmds:
-      - |
-        echo " Generating dependency graph for {{.ENV}}..."
-        cd environments/{{.ENV}}
-        terraform graph > ../../docs/architecture/{{.ENV}}-graph.dot
-        if command -v dot >/dev/null 2>&1; then
-          dot -Tsvg ../../docs/architecture/{{.ENV}}-graph.dot -o ../../docs/architecture/{{.ENV}}-graph.svg
-          echo " Graph saved to docs/architecture/{{.ENV}}-graph.svg"
-        else
-          echo " Graph saved to docs/architecture/{{.ENV}}-graph.dot (install graphviz for SVG)"
-        fi
+      - terraform destroy {{.CLI_ARGS}}
 
   clean:
-    desc: Clean Terraform files and caches
+    desc: Clean Terraform cache and state
     cmds:
       - |
-        echo " Cleaning Terraform files..."
-        find . -name ".terraform" -type d -exec rm -rf {} + 2>/dev/null || true
-        find . -name "*.tfplan" -delete 2>/dev/null || true
+        echo "Cleaning Terraform cache..."
+        find . -type d -name ".terraform" -exec rm -rf {} + 2>/dev/null || true
         find . -name "*.tfstate.backup" -delete 2>/dev/null || true
         find . -name ".terraform.lock.hcl" -delete 2>/dev/null || true
-        echo " Terraform files cleaned"
+        echo "Terraform cache cleaned"
 
-  show:
-    desc: Show current state or plan
-    vars:
-      ENV: '{{.ENV | default "dev"}}'
-      FILE: '{{.FILE | default ""}}'
+  ws-new:
+    desc: Create new workspace
     cmds:
-      - |
-        cd environments/{{.ENV}}
-        if [ -n "{{.FILE}}" ]; then
-          echo " Showing {{.FILE}}..."
-          terraform show {{.FILE}}
-        else
-          echo " Showing current state for {{.ENV}}..."
-          terraform show
-        fi
+      - terraform workspace new {{.WORKSPACE}}
+
+  ws-select:
+    desc: Select workspace
+    cmds:
+      - terraform workspace select {{.WORKSPACE}}
+
+  ws-list:
+    desc: List workspaces
+    cmds:
+      - terraform workspace list
+
+  ws-delete:
+    desc: Delete workspace
+    cmds:
+      - terraform workspace delete {{.WORKSPACE}}
+
+  state-list:
+    desc: List state resources
+    cmds:
+      - terraform state list
+
+  state-show:
+    desc: Show resource from state
+    cmds:
+      - terraform state show {{.RESOURCE}}
+
+  state-move:
+    desc: Move resource in state
+    cmds:
+      - terraform state mv {{.SOURCE}} {{.DESTINATION}}
+
+  state-remove:
+    desc: Remove resource from state
+    cmds:
+      - terraform state rm {{.RESOURCE}}
+
+  refresh:
+    desc: Refresh state
+    cmds:
+      - terraform refresh {{.CLI_ARGS}}
+
+  show-output:
+    desc: Show outputs
+    cmds:
+      - terraform output {{.CLI_ARGS}}
+
+  console:
+    desc: Interactive console
+    cmds:
+      - terraform console
+
+  show-version:
+    desc: Show Terraform version
+    cmds:
+      - terraform version
+
+  show-providers:
+    desc: Show provider requirements
+    cmds:
+      - terraform providers

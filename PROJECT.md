@@ -7,10 +7,9 @@
 ```markdown
 1. .gitignore
 2. README.md
-3. .pre-commit-config.yaml
-4. Makefile
-5. terraform.tf
-6. versions.tf
+3. Makefile
+4. terraform.tf
+5. versions.tf
 ```
 
 ### 1.2 Basic Configuration Files
