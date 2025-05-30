@@ -2,7 +2,7 @@
 # Modern task runner for Terraform EKS Zero-Trust project
 # https://taskfile.dev/
 
-version: '3'
+version: "3"
 
 vars:
   PROJECT_NAME: terraform-eks-zero-trust
@@ -72,15 +72,15 @@ tasks:
           sudo mv terraform-docs /usr/local/bin/
           rm terraform-docs.tar.gz
         fi
-        
+
         # Install checkov
         pip3 install checkov=={{.CHECKOV_VERSION}}
-        
+
         # Install trivy
         if ! command -v trivy >/dev/null 2>&1; then
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v{{.TRIVY_VERSION}}
         fi
-        
+
         echo "Tools installed successfully"
 
   setup-pre-commit:
@@ -123,7 +123,7 @@ tasks:
       ENV: '{{.ENV | default "dev"}}'
     cmds:
       - task: terraform:plan
-        vars: {ENV: "{{.ENV}}"}
+        vars: { ENV: "{{.ENV}}" }
 
   apply:
     desc: Apply deployment for specific environment
@@ -131,7 +131,7 @@ tasks:
       ENV: '{{.ENV | default "dev"}}'
     cmds:
       - task: terraform:apply
-        vars: {ENV: "{{.ENV}}"}
+        vars: { ENV: "{{.ENV}}" }
 
   destroy:
     desc: Destroy deployment for specific environment
@@ -139,7 +139,7 @@ tasks:
       ENV: '{{.ENV | default "dev"}}'
     cmds:
       - task: terraform:destroy
-        vars: {ENV: "{{.ENV}}"}
+        vars: { ENV: "{{.ENV}}" }
 
   # Utility tasks
   clean:
@@ -203,7 +203,7 @@ tasks:
       ENV: '{{.ENV | default "dev"}}'
     cmds:
       - task: terraform:plan
-        vars: {ENV: "{{.ENV}}"}
+        vars: { ENV: "{{.ENV}}" }
 
   ci-apply:
     desc: CI apply pipeline
@@ -211,7 +211,7 @@ tasks:
       ENV: '{{.ENV | default "dev"}}'
     cmds:
       - task: terraform:apply
-        vars: {ENV: "{{.ENV}}"}
+        vars: { ENV: "{{.ENV}}" }
 
   # Debugging and troubleshooting
   debug:
@@ -303,31 +303,31 @@ tasks:
     desc: Plan development environment
     cmds:
       - task: plan
-        vars: {ENV: "dev"}
+        vars: { ENV: "dev" }
 
   dev-apply:
     desc: Apply development environment
     cmds:
       - task: apply
-        vars: {ENV: "dev"}
+        vars: { ENV: "dev" }
 
   staging-plan:
     desc: Plan staging environment
     cmds:
       - task: plan
-        vars: {ENV: "staging"}
+        vars: { ENV: "staging" }
 
   staging-apply:
     desc: Apply staging environment
     cmds:
       - task: apply
-        vars: {ENV: "staging"}
+        vars: { ENV: "staging" }
 
   prod-plan:
     desc: Plan production environment
     cmds:
       - task: plan
-        vars: {ENV: "prod"}
+        vars: { ENV: "prod" }
 
   prod-apply:
     desc: Apply production environment (with confirmation)

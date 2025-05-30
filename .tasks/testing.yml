@@ -1,0 +1,222 @@
+version: 3
+
+vars:
+  TEST_TIMEOUT: 30m
+  TEST_PARALLEL: 4
+
+tasks:
+  unit:
+    desc: Run unit tests
+    cmds:
+      - |
+        echo "Running unit tests..."
+        # Run Terraform native unit tests
+        find . -name "*.tftest.hcl" -path "*/testing/*" -not -path "*/integration/*" -not -path "*/e2e/*" | while read test_file; do
+          echo "Running unit test: $test_file"
+          terraform test -test-directory="$(dirname "$test_file")" -verbose
+        done
+        echo "Unit tests completed"
+
+  integration:
+    desc: Run integration tests
+    cmds:
+      - |
+        echo "Running integration tests..."
+        # Run integration tests that require actual AWS resources
+        find tests/integration/ -name "*.tftest.hcl" | while read test_file; do
+          echo "Running integration test: $test_file"
+          terraform test -test-directory="$(dirname "$test_file")" -verbose
+        done
+        echo "Integration tests completed"
+
+  e2e:
+    desc: Run end-to-end tests
+    cmds:
+      - |
+        echo "Running end-to-end tests..."
+        find tests/e2e/ -name "*.tftest.hcl" | while read test_file; do
+          echo "Running E2E test: $test_file"
+          terraform test -test-directory="$(dirname "$test_file")" -verbose
+        done
+        echo "End-to-end tests completed"
+
+  security:
+    desc: Run security tests
+    cmds:
+      - |
+        echo "Running security tests..."
+        find tests/security/ -name "*.tftest.hcl" | while read test_file; do
+          echo "Running security test: $test_file"
+          terraform test -test-directory="$(dirname "$test_file")" -verbose
+        done
+        echo "Security tests completed"
+
+  compliance:
+    desc: Run compliance tests
+    cmds:
+      - |
+        echo "Running compliance tests..."
+        find tests/compliance/ -name "*.tftest.hcl" | while read test_file; do
+          echo "Running compliance test: $test_file"
+          terraform test -test-directory="$(dirname "$test_file")" -verbose
+        done
+        echo "Compliance tests completed"
+
+  module:
+    desc: Test specific module
+    vars:
+      MODULE: "{{.MODULE}}"
+    cmds:
+      - |
+        if [ -z "{{.MODULE}}" ]; then
+          echo "ERROR: Usage: task testing:module MODULE=vpc"
+          exit 1
+        fi
+        echo "Testing module: {{.MODULE}}"
+        cd modules/{{.MODULE}}
+        if [ -d "testing" ]; then
+          find testing/ -name "*.tftest.hcl" | while read test_file; do
+            echo "Running test: $test_file"
+            terraform test -test-directory="$(dirname "$test_file")" -verbose
+          done
+        else
+          echo "No tests found for module {{.MODULE}}"
+        fi
+        echo "Module testing completed"
+
+  stack:
+    desc: Test specific stack
+    vars:
+      STACK: "{{.STACK}}"
+    cmds:
+      - |
+        if [ -z "{{.STACK}}" ]; then
+          echo "ERROR: Usage: task testing:stack STACK=networking"
+          exit 1
+        fi
+        echo "Testing stack: {{.STACK}}"
+        cd stacks/{{.STACK}}
+        if [ -d "testing" ]; then
+          find testing/ -name "*.tftest.hcl" | while read test_file; do
+            echo "Running test: $test_file"
+            terraform test -test-directory="$(dirname "$test_file")" -verbose
+          done
+        else
+          echo "No tests found for stack {{.STACK}}"
+        fi
+        echo "Stack testing completed"
+
+  validate-tests:
+    desc: Validate all test files syntax
+    cmds:
+      - |
+        echo "Validating test file syntax..."
+        find . -name "*.tftest.hcl" | while read test_file; do
+          echo "Validating: $test_file"
+          terraform test -no-run -test-directory="$(dirname "$test_file")"
+        done
+        echo "Test validation completed"
+
+  cleanup-tests:
+    desc: Cleanup test resources
+    cmds:
+      - |
+        echo "Cleaning up test resources..."
+        # Remove any test state files
+        find . -name "*.tftest.tfstate*" -delete 2>/dev/null || true
+        find . -path "*/.terraform/terraform.tfstate" -delete 2>/dev/null || true
+        echo "Test cleanup completed"
+
+  coverage:
+    desc: Generate test coverage report
+    cmds:
+      - |
+        echo "Generating test coverage report..."
+        # Count total testable resources vs tested resources
+        TOTAL_MODULES=$(find modules/ -name "main.tf" | wc -l)
+        TESTED_MODULES=$(find modules/ -name "*.tftest.hcl" -exec dirname {} \; | sort -u | wc -l)
+        COVERAGE=$((TESTED_MODULES * 100 / TOTAL_MODULES))
+        echo "Module test coverage: $TESTED_MODULES/$TOTAL_MODULES ($COVERAGE%)"
+
+        TOTAL_STACKS=$(find stacks/ -name "*.tfstack.hcl" | wc -l)
+        TESTED_STACKS=$(find stacks/ -name "*.tftest.hcl" -exec dirname {} \; | sort -u | wc -l)
+        if [ $TOTAL_STACKS -gt 0 ]; then
+          STACK_COVERAGE=$((TESTED_STACKS * 100 / TOTAL_STACKS))
+          echo "Stack test coverage: $TESTED_STACKS/$TOTAL_STACKS ($STACK_COVERAGE%)"
+        fi
+
+  watch:
+    desc: Watch for changes and run tests
+    vars:
+      MODULE: '{{.MODULE | default ""}}'
+    cmds:
+      - |
+        if [ -n "{{.MODULE}}" ]; then
+          echo "Watching module {{.MODULE}} for changes..."
+          while true; do
+            inotifywait -r -e modify modules/{{.MODULE}}/
+            echo "Changes detected, running tests..."
+            task testing:module MODULE={{.MODULE}}
+          done
+        else
+          echo "Watching all modules for changes..."
+          while true; do
+            inotifywait -r -e modify modules/
+            echo "Changes detected, running unit tests..."
+            task testing:unit
+          done
+        fi
+
+  benchmark:
+    desc: Run performance benchmarks
+    cmds:
+      - |
+        echo "Running performance benchmarks..."
+        START_TIME=$(date +%s)
+        task testing:unit
+        UNIT_TIME=$(($(date +%s) - START_TIME))
+        echo "Unit tests completed in ${UNIT_TIME}s"
+
+        START_TIME=$(date +%s)
+        task testing:integration
+        INTEGRATION_TIME=$(($(date +%s) - START_TIME))
+        echo "Integration tests completed in ${INTEGRATION_TIME}s"
+
+        echo "Performance summary:"
+        echo "  Unit tests: ${UNIT_TIME}s"
+        echo "  Integration tests: ${INTEGRATION_TIME}s"
+        echo "  Total: $((UNIT_TIME + INTEGRATION_TIME))s"
+
+  parallel:
+    desc: Run tests in parallel
+    cmds:
+      - |
+        echo "Running tests in parallel..."
+        # Run different test types in parallel
+        task testing:unit &
+        UNIT_PID=$!
+        task testing:security &
+        SECURITY_PID=$!
+        task testing:compliance &
+        COMPLIANCE_PID=$!
+
+        # Wait for all tests to complete
+        wait $UNIT_PID
+        wait $SECURITY_PID
+        wait $COMPLIANCE_PID
+
+        echo "Parallel testing completed"
+
+  lint-tests:
+    desc: Lint test files
+    cmds:
+      - |
+        echo "Linting test files..."
+        find . -name "*.tftest.hcl" | while read test_file; do
+          echo "Linting: $test_file"
+          terraform fmt -check "$test_file" || {
+            echo "Formatting issues found in $test_file"
+            terraform fmt "$test_file"
+          }
+        done
+        echo "Test linting completed"# .tasks/testing.yml

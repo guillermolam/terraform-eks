@@ -2,7 +2,7 @@ terraform-eks-zero-trust/
 ├── README.md
 ├── .gitignore
 ├── .pre-commit-config.yaml
-├── Makefile
+├── Taskfile.yml
 ├── terragrunt.hcl
 ├── common.hcl
 ├── region.hcl

@@ -87,11 +87,15 @@ repos:
           - .secrets.baseline
         exclude: |
           (?x)^(
-            .*\.terraform/.*|
-            .*\.tfstate.*|
-            .*\.tfplan.*|
-            lock\.json|
-            package-lock\.json
+            # ignore the virtual-env
+            \.venv(?:/.*)?
+          | # ignore Trunk’s own directory
+            \.trunk(?:/.*)?
+          | # your other ignores...
+            \.terraform/.*
+          |  .*\.tfstate.*
+          |  node_modules/.*
+          |  __pycache__/.*
           )$
 
   - repo: https://github.com/adrienverge/yamllint
@@ -275,6 +279,7 @@ repos:
 
 default_language_version:
   python: python3.12
+  # trunk-ignore(yamllint/quoted-strings)
   node: "22.1.0"
 
 default_stages:
@@ -286,15 +291,15 @@ minimum_pre_commit_version: 3.5.0
 
 exclude: |
   (?x)^(
-    \.terraform/.*|
-    .*\.tfstate.*|
-    .*\.tfplan.*|
-    \.git/.*|
-    node_modules/.*|
-    \.vscode/.*|
-    \.idea/.*|
-    \.task/.*|
-    __pycache__/.*|
+    # ignore the virtual-env
+    \.venv(?:/.*)?
+  | # ignore Trunk’s own directory
+    \.trunk(?:/.*)?
+  | # your other ignores...
+    \.terraform/.*
+  |  .*\.tfstate.*
+  |  node_modules/.*
+  |  __pycache__/.*
   )$
 
 ci:

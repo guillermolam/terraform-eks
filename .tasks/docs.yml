@@ -1,0 +1,304 @@
+version: 3
+
+vars:
+  TERRAFORM_DOCS_CONFIG: .terraform-docs.yml
+  DOCS_OUTPUT_DIR: docs/generated
+
+tasks:
+  generate-all:
+    desc: Generate all documentation
+    cmds:
+      - task: generate-terraform-docs
+      - task: generate-api-docs
+      - task: generate-architecture-docs
+      - task: generate-runbooks
+      - echo "All documentation generated"
+
+  generate-terraform-docs:
+    desc: Generate Terraform module documentation
+    cmds:
+      - |
+        echo "Generating Terraform documentation..."
+        if command -v terraform-docs >/dev/null 2>&1; then
+          # Generate docs for each module
+          find modules/ -name "main.tf" -exec dirname {} \; | while read module_dir; do
+            echo "Generating docs for $module_dir"
+            terraform-docs --config {{.TERRAFORM_DOCS_CONFIG}} "$module_dir"
+          done
+
+          # Generate docs for stacks
+          find stacks/ -name "*.tfstack.hcl" -exec dirname {} \; | while read stack_dir; do
+            echo "Generating docs for $stack_dir"
+            terraform-docs --config {{.TERRAFORM_DOCS_CONFIG}} "$stack_dir"
+          done
+        else
+          echo "WARNING: terraform-docs not found, skipping documentation generation"
+        fi
+        echo "Terraform documentation generated"
+
+  generate-api-docs:
+    desc: Generate API documentation
+    cmds:
+      - |
+        echo "Generating API documentation..."
+        mkdir -p {{.DOCS_OUTPUT_DIR}}/api
+
+        # Generate Terraform provider documentation
+        echo "Generating provider API docs..."
+        python3 scripts/docs/generate-provider-docs.py
+
+        # Generate AWS API mappings
+        echo "Generating AWS API mappings..."
+        python3 scripts/docs/generate-aws-api-docs.py
+
+        echo "API documentation generated"
+
+  generate-architecture-docs:
+    desc: Generate architecture documentation
+    cmds:
+      - |
+        echo "Generating architecture documentation..."
+        mkdir -p {{.DOCS_OUTPUT_DIR}}/architecture
+
+        # Generate network diagrams
+        if command -v terraform >/dev/null 2>&1 && command -v dot >/dev/null 2>&1; then
+          echo "Generating network diagrams..."
+          for env in dev staging prod; do
+            if [ -d "environments/$env" ]; then
+              echo "Generating diagram for $env environment..."
+              cd "environments/$env"
+              terraform graph | dot -Tsvg > "../../{{.DOCS_OUTPUT_DIR}}/architecture/$env-architecture.svg"
+              cd ../..
+            fi
+          done
+        fi
+
+        # Generate component diagrams
+        echo "Generating component diagrams..."
+        python3 scripts/docs/generate-component-diagrams.py
+
+        # Generate security architecture
+        echo "Generating security architecture..."
+        python3 scripts/docs/generate-security-architecture.py
+
+        echo "Architecture documentation generated"
+
+  generate-runbooks:
+    desc: Generate operational runbooks
+    cmds:
+      - |
+        echo "Generating operational runbooks..."
+        mkdir -p {{.DOCS_OUTPUT_DIR}}/runbooks
+
+        # Generate deployment runbooks
+        echo "Generating deployment runbooks..."
+        python3 scripts/docs/generate-deployment-runbooks.py
+
+        # Generate troubleshooting guides
+        echo "Generating troubleshooting guides..."
+        python3 scripts/docs/generate-troubleshooting-guides.py
+
+        # Generate incident response procedures
+        echo "Generating incident response procedures..."
+        python3 scripts/docs/generate-incident-response.py
+
+        echo "Operational runbooks generated"
+
+  validate:
+    desc: Validate documentation
+    cmds:
+      - |
+        echo "Validating documentation..."
+        # Check for broken links
+        if command -v markdown-link-check >/dev/null 2>&1; then
+          echo "Checking for broken links..."
+          find docs/ -name "*.md" -exec markdown-link-check {} \;
+        fi
+
+        # Validate markdown syntax
+        if command -v markdownlint >/dev/null 2>&1; then
+          echo "Validating markdown syntax..."
+          markdownlint docs/ --config .markdownlint.yml
+        fi
+
+        # Check documentation completeness
+        echo "Checking documentation completeness..."
+        python3 scripts/docs/validate-completeness.py
+
+        echo "Documentation validation completed"
+
+  lint:
+    desc: Lint documentation files
+    cmds:
+      - |
+        echo "Linting documentation..."
+        if command -v markdownlint >/dev/null 2>&1; then
+          markdownlint docs/ --config .markdownlint.yml --fix
+        fi
+
+        if command -v prettier >/dev/null 2>&1; then
+          prettier --write "docs/**/*.md"
+        fi
+
+        echo "Documentation linting completed"
+
+  serve:
+    desc: Serve documentation locally
+    cmds:
+      - |
+        echo "Starting documentation server..."
+        if command -v mkdocs >/dev/null 2>&1; then
+          mkdocs serve
+        elif command -v hugo >/dev/null 2>&1; then
+          hugo server -D
+        elif command -v python3 >/dev/null 2>&1; then
+          cd docs
+          python3 -m http.server 8000
+        else
+          echo "ERROR: No documentation server available"
+          exit 1
+        fi
+
+  build:
+    desc: Build static documentation site
+    cmds:
+      - |
+        echo "Building documentation site..."
+        if command -v mkdocs >/dev/null 2>&1; then
+          mkdocs build
+        elif command -v hugo >/dev/null 2>&1; then
+          hugo
+        else
+          echo "WARNING: No static site generator available"
+        fi
+        echo "Documentation site built"
+
+  deploy:
+    desc: Deploy documentation to hosting
+    cmds:
+      - |
+        echo "Deploying documentation..."
+        if [ -n "$DOCS_DEPLOY_TARGET" ]; then
+          case "$DOCS_DEPLOY_TARGET" in
+            "github-pages")
+              if command -v mkdocs >/dev/null 2>&1; then
+                mkdocs gh-deploy
+              fi
+              ;;
+            "s3")
+              if [ -n "$DOCS_S3_BUCKET" ]; then
+                aws s3 sync site/ s3://$DOCS_S3_BUCKET/ --delete
+              fi
+              ;;
+            *)
+              echo "ERROR: Unknown deployment target: $DOCS_DEPLOY_TARGET"
+              exit 1
+              ;;
+          esac
+        else
+          echo "WARNING: No deployment target configured"
+        fi
+        echo "Documentation deployed"
+
+  update-readme:
+    desc: Update project README
+    cmds:
+      - |
+        echo "Updating project README..."
+        # Generate module table
+        python3 scripts/docs/generate-module-table.py > docs/generated/module-table.md
+
+        # Generate stack table
+        python3 scripts/docs/generate-stack-table.py > docs/generated/stack-table.md
+
+        # Update main README with generated content
+        python3 scripts/docs/update-readme.py
+
+        echo "README updated"
+
+  changelog:
+    desc: Generate changelog
+    cmds:
+      - |
+        echo "Generating changelog..."
+        if command -v git-chglog >/dev/null 2>&1; then
+          git-chglog -o CHANGELOG.md
+        elif command -v conventional-changelog >/dev/null 2>&1; then
+          conventional-changelog -i CHANGELOG.md -s
+        else
+          echo "Generating basic changelog from git log..."
+          git log --oneline --decorate --graph > CHANGELOG.md
+        fi
+        echo "Changelog generated"
+
+  metrics:
+    desc: Generate documentation metrics
+    cmds:
+      - |
+        echo "Generating documentation metrics..."
+        # Count documentation coverage
+        TOTAL_MODULES=$(find modules/ -name "main.tf" | wc -l)
+        DOCUMENTED_MODULES=$(find modules/ -name "README.md" | wc -l)
+        DOC_COVERAGE=$((DOCUMENTED_MODULES * 100 / TOTAL_MODULES))
+
+        echo "Documentation metrics:"
+        echo "  Total modules: $TOTAL_MODULES"
+        echo "  Documented modules: $DOCUMENTED_MODULES"
+        echo "  Documentation coverage: $DOC_COVERAGE%"
+
+        # Count total documentation size
+        TOTAL_DOCS=$(find docs/ -name "*.md" | wc -l)
+        TOTAL_WORDS=$(find docs/ -name "*.md" -exec wc -w {} \; | awk '{sum += $1} END {print sum}')
+
+        echo "  Total documentation files: $TOTAL_DOCS"
+        echo "  Total words: $TOTAL_WORDS"
+
+        # Save metrics
+        cat > docs/generated/metrics.json << EOF
+        {
+          "modules": {
+            "total": $TOTAL_MODULES,
+            "documented": $DOCUMENTED_MODULES,
+            "coverage": $DOC_COVERAGE
+          },
+          "documentation": {
+            "files": $TOTAL_DOCS,
+            "words": $TOTAL_WORDS
+          },
+          "generated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        }
+        EOF
+
+        echo "Documentation metrics saved to docs/generated/metrics.json"
+
+  clean:
+    desc: Clean generated documentation
+    cmds:
+      - |
+        echo "Cleaning generated documentation..."
+        rm -rf {{.DOCS_OUTPUT_DIR}}
+        rm -rf site/
+        rm -rf public/
+        find . -name "terraform-docs-generated.md" -delete 2>/dev/null || true
+        echo "Generated documentation cleaned"
+
+  spellcheck:
+    desc: Run spellcheck on documentation
+    cmds:
+      - |
+        echo "Running spellcheck..."
+        if command -v aspell >/dev/null 2>&1; then
+          find docs/ -name "*.md" -exec aspell check {} \;
+        elif command -v hunspell >/dev/null 2>&1; then
+          find docs/ -name "*.md" -exec hunspell {} \;
+        else
+          echo "WARNING: No spellchecker available"
+        fi
+        echo "Spellcheck completed"
+
+  word-count:
+    desc: Count words in documentation
+    cmds:
+      - |
+        echo "Counting words in documentation..."
+        find docs/ -name "*.md" -exec wc -w {} + | tail -1
