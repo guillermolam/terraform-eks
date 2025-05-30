@@ -275,7 +275,7 @@ repos:
 
 default_language_version:
   python: python3.12
-  node: 22.1.0
+  node: "22.1.0"
 
 default_stages:
   - commit
@@ -309,5 +309,3 @@ ci:
   skip:
     - terraform_providers_lock
     - trivy-config
-
-  skip_if_no_config: true
