@@ -1,4 +1,4 @@
-# Complete TDD Development Order - Terraform 1.12+ with Stacks & Native Testing
+# PROJECT.md | Complete TDD Development Order - Terraform 1.12 Native Stacks & Testing
 
 ## Phase 1: Foundation & Project Setup (Days 1-3)
 
@@ -7,44 +7,57 @@
 ```markdown
 1. .gitignore
 2. README.md
-3. Makefile
+3. Taskfile.yml
 4. terraform.tf
 5. versions.tf
+6. providers.tf
 ```
 
 ### 1.2 Basic Configuration Files
 
 ```markdown
 7. .terraform-version
-8. configs/terraform/backend-config.tf
-9. configs/terraform/provider-config.tf
-10. configs/terraform/remote-state.tf
-11. configs/terraform/workspace-config.tf
+8. configs/terraform/backend.tf
+9. configs/terraform/provider.tf
+10. configs/terraform/variables.tf
+11. configs/terraform/remote_state.tf
 ```
 
-### 1.3 Testing Foundation
+### 1.3 Task Runner Foundation
 
 ```markdown
-12. tests/shared/testing-providers.tf
-13. tests/shared/testing-variables.tf
-14. tests/shared/testing-locals.tf
-15. tests/shared/testing-helpers.tf
-16. configs/testing/test-providers.tf
-17. configs/testing/test-variables.tf
-18. configs/testing/test-mocks.tf
-19. configs/testing/test-helpers.tf
+12. .tasks/terraform.yml
+13. .tasks/testing.yml
+14. .tasks/security.yml
+15. .tasks/kubernetes.yml
+16. .tasks/ci-cd.yml
+17. .tasks/cleanup.yml
+18. .tasks/utilities.yml
 ```
 
-### 1.4 Initial CI/CD Structure
+### 1.4 Testing Foundation (Terraform Native)
 
 ```markdown
-20. .github/workflows/terraform-test-unit.yml
-21. .github/actions/setup-terraform-stacks/action.yml
-22. .github/actions/setup-terraform-stacks/setup.sh
-23. .github/actions/run-terraform-tests/action.yml
-24. .github/actions/run-terraform-tests/test-runner.sh
-25. .github/CODEOWNERS
-26. .github/dependabot.yml
+19. tests/shared/testing-providers.tftest
+20. tests/shared/testing-variables.tftest
+21. tests/shared/testing-locals.tftest
+22. tests/shared/testing-helpers.tftest
+23. tests/fixtures/common/main.tf
+24. tests/fixtures/common/variables.tf
+25. tests/fixtures/common/outputs.tf
+```
+
+### 1.5 Initial CI/CD Structure
+
+```markdown
+26. .github/workflows/terraform-test-unit.yml
+27. .github/workflows/terraform-test-integration.yml
+28. .github/actions/setup-terraform/action.yml
+29. .github/actions/setup-terraform/setup.sh
+30. .github/actions/run-terraform-tests/action.yml
+31. .github/actions/run-terraform-tests/test-runner.sh
+32. .github/CODEOWNERS
+33. .github/dependabot.yml
 ```
 
 ## Phase 2: VPC Module (TDD Cycle 1 - Days 4-7)
@@ -52,128 +65,120 @@
 ### 2.1 VPC Tests First (RED)
 
 ```markdown
-27. modules/vpc/testing/setup/main.tf
-28. modules/vpc/testing/vpc-basic.tftest.hcl
-29. modules/vpc/testing/vpc-security.tftest.hcl
-30. modules/vpc/testing/vpc-ipv6.tftest.hcl
-31. modules/vpc/testing/vpc-endpoints.tftest.hcl
+34. tests/unit/vpc_test.tftest
+35. tests/unit/vpc_security_test.tftest
+36. tests/unit/vpc_endpoints_test.tftest
+37. tests/fixtures/vpc/main.tf
+38. tests/fixtures/vpc/variables.tf
+39. tests/fixtures/vpc/outputs.tf
 ```
 
 ### 2.2 VPC Implementation (GREEN)
 
 ```markdown
-32. modules/vpc/versions.tf
-33. modules/vpc/variables.tf
-34. modules/vpc/outputs.tf
-35. modules/vpc/locals.tf
-36. modules/vpc/data.tf
-37. modules/vpc/vpc.tf
-38. modules/vpc/subnets.tf
-39. modules/vpc/gateways.tf
-40. modules/vpc/routing.tf
-41. modules/vpc/security-groups.tf
-42. modules/vpc/nacls.tf
-43. modules/vpc/vpc-endpoints.tf
-44. modules/vpc/flow-logs.tf
-45. modules/vpc/main.tf
+40. modules/vpc/versions.tf
+41. modules/vpc/variables.tf
+42. modules/vpc/outputs.tf
+43. modules/vpc/locals.tf
+44. modules/vpc/data.tf
+45. modules/vpc/vpc.tf
+46. modules/vpc/subnets.tf
+47. modules/vpc/internet_gateway.tf
+48. modules/vpc/nat_gateway.tf
+49. modules/vpc/route_tables.tf
+50. modules/vpc/nacls.tf
+51. modules/vpc/vpc_endpoints.tf
+52. modules/vpc/flow_logs.tf
+53. modules/vpc/security_groups.tf
+54. modules/vpc/main.tf
 ```
 
 ### 2.3 VPC Testing Scripts
 
-```markdown46. scripts/testing/run-unit-tests.sh
-47. scripts/testing/test-report.sh
+```markdown
+55. scripts/testing/run-unit-tests.sh
+56. scripts/testing/test-report.sh
 ```
 
 ## Phase 3: Security Foundation (TDD Cycle 2 - Days 8-14)
 
 ### 3.1 IAM Tests First (RED)
 
-```markdown48. modules/security/iam/testing/setup/main.tf
-49. modules/security/iam/testing/iam-roles.tftest.hcl
-50. modules/security/iam/testing/iam-policies.tftest.hcl
-51. modules/security/iam/testing/iam-oidc.tftest.hcl
-52. modules/security/iam/testing/iam-least-privilege.tftest.hcl
+```markdown
+57. tests/unit/iam_test.tftest
+58. tests/unit/iam_roles_test.tftest
+59. tests/unit/iam_policies_test.tftest
+60. tests/unit/iam_oidc_test.tftest
+61. tests/fixtures/iam/main.tf
+62. tests/fixtures/iam/variables.tf
+63. tests/fixtures/iam/outputs.tf
 ```
 
 ### 3.2 IAM Policy Templates
 
 ```markdown
-53. modules/security/iam/policies/cluster-policy.json.tftpl
-54. modules/security/iam/policies/node-policy.json.tftpl
-55. modules/security/iam/policies/csi-policy.json.tftpl
-56. modules/security/iam/policies/load-balancer-policy.json.tftpl
-57. modules/security/iam/policies/autoscaler-policy.json.tftpl
-58. modules/security/iam/policies/cert-manager-policy.json.tftpl
+64. modules/iam/policies/cluster_policy.json.tpl
+65. modules/iam/policies/node_policy.json.tpl
+66. modules/iam/policies/cni_policy.json.tpl
+67. modules/iam/policies/container_registry_policy.json.tpl
+68. modules/iam/policies/ebs_csi_policy.json.tpl
+69. modules/iam/policies/efs_csi_policy.json.tpl
+70. modules/iam/policies/load_balancer_controller_policy.json.tpl
+71. modules/iam/policies/cluster_autoscaler_policy.json.tpl
+72. modules/iam/policies/cert_manager_policy.json.tpl
+73. modules/iam/policies/external_dns_policy.json.tpl
 ```
 
-### 3.3 IAM Implementation (GREEN)
-
-```markdown59. modules/security/iam/versions.tf
-60. modules/security/iam/variables.tf
-61. modules/security/iam/outputs.tf
-62. modules/security/iam/cluster-roles.tf
-63. modules/security/iam/node-roles.tf
-64. modules/security/iam/irsa-roles.tf
-65. modules/security/iam/oidc-provider.tf
-66. modules/security/iam/main.tf
-```
-
-### 3.4 KMS Tests First (RED)
-
-```markdown67. modules/security/kms/testing/setup/main.tf
-68. modules/security/kms/testing/kms-encryption.tftest.hcl
-69. modules/security/kms/testing/kms-policies.tftest.hcl
-70. modules/security/kms/testing/kms-rotation.tftest.hcl
-```
-
-### 3.5 KMS Implementation (GREEN)
-
-```markdown71. modules/security/kms/versions.tf
-72. modules/security/kms/variables.tf
-73. modules/security/kms/outputs.tf
-74. modules/security/kms/kms-keys.tf
-75. modules/security/kms/kms-aliases.tf
-76. modules/security/kms/kms-policies.tf
-77. modules/security/kms/main.tf
-```
-
-### 3.6 Secrets Tests First (RED)
+### 3.3 IAM Trust Policy Templates
 
 ```markdown
-78. modules/security/secrets/testing/setup/main.tf
-79. modules/security/secrets/testing/secrets-encryption.tftest.hcl
-80. modules/security/secrets/testing/secrets-rotation.tftest.hcl
-81. modules/security/secrets/testing/secrets-access.tftest.hcl
+74. modules/iam/trust_policies/cluster_trust_policy.json.tpl
+75. modules/iam/trust_policies/node_trust_policy.json.tpl
+76. modules/iam/trust_policies/oidc_trust_policy.json.tpl
 ```
 
-### 3.7 Secrets Implementation (GREEN)
-
-```markdown82. modules/security/secrets/versions.tf
-83. modules/security/secrets/variables.tf
-84. modules/security/secrets/outputs.tf
-85. modules/security/secrets/secrets-manager.tf
-86. modules/security/secrets/parameter-store.tf
-87. modules/security/secrets/main.tf
-```
-
-### 3.8 Network Security Tests First (RED)
-
-```markdown88. modules/security/network/testing/setup/main.tf
-89. modules/security/network/testing/security-groups.tftest.hcl
-90. modules/security/network/testing/nacls.tftest.hcl
-91. modules/security/network/testing/waf.tftest.hcl
-```
-
-### 3.9 Network Security Implementation (GREEN)
+### 3.4 IAM Implementation (GREEN)
 
 ```markdown
-92. modules/security/network/versions.tf
-93. modules/security/network/variables.tf
-94. modules/security/network/outputs.tf
-95. modules/security/network/security-groups.tf
-96. modules/security/network/nacls.tf
-97. modules/security/network/waf.tf
-98. modules/security/network/main.tf
+77. modules/iam/versions.tf
+78. modules/iam/variables.tf
+79. modules/iam/outputs.tf
+80. modules/iam/data.tf
+81. modules/iam/locals.tf
+82. modules/iam/cluster_service_role.tf
+83. modules/iam/node_group_role.tf
+84. modules/iam/pod_execution_role.tf
+85. modules/iam/oidc_provider.tf
+86. modules/iam/irsa_roles.tf
+87. modules/iam/main.tf
+```
+
+### 3.5 Security Module Tests First (RED)
+
+```markdown
+88. tests/unit/security_test.tftest
+89. tests/unit/security_kms_test.tftest
+90. tests/unit/security_secrets_test.tftest
+91. tests/unit/security_waf_test.tftest
+92. tests/fixtures/security/main.tf
+93. tests/fixtures/security/variables.tf
+94. tests/fixtures/security/outputs.tf
+```
+
+### 3.6 Security Module Implementation (GREEN)
+
+```markdown
+95. modules/security/versions.tf
+96. modules/security/variables.tf
+97. modules/security/outputs.tf
+98. modules/security/data.tf
+99. modules/security/locals.tf
+100.  modules/security/kms.tf
+101.  modules/security/secrets_manager.tf
+102.  modules/security/parameter_store.tf
+103.  modules/security/security_groups.tf
+104.  modules/security/waf.tf
+105.  modules/security/main.tf
 ```
 
 ## Phase 4: EKS Core Infrastructure (TDD Cycle 3 - Days 15-21)
@@ -181,70 +186,53 @@
 ### 4.1 EKS Cluster Tests First (RED)
 
 ```markdown
-99. modules/eks/cluster/testing/setup/main.tf
-100. modules/eks/cluster/testing/cluster-basic.tftest.hcl
-101. modules/eks/cluster/testing/cluster-security.tftest.hcl
-102. modules/eks/cluster/testing/cluster-encryption.tftest.hcl
-103. modules/eks/cluster/testing/cluster-logging.tftest.hcl
-104. modules/eks/cluster/testing/cluster-compliance.tftest.hcl
+106. tests/unit/eks_cluster_test.tftest
+107. tests/unit/eks_cluster_security_test.tftest
+108. tests/unit/eks_cluster_encryption_test.tftest
+109. tests/unit/eks_cluster_logging_test.tftest
+110. tests/fixtures/eks-cluster/main.tf
+111. tests/fixtures/eks-cluster/variables.tf
+112. tests/fixtures/eks-cluster/outputs.tf
 ```
 
 ### 4.2 EKS Cluster Implementation (GREEN)
 
 ```markdown
-105. modules/eks/cluster/versions.tf
-106. modules/eks/cluster/variables.tf
-107. modules/eks/cluster/outputs.tf
-108. modules/eks/cluster/locals.tf
-109. modules/eks/cluster/data.tf
-110. modules/eks/cluster/cluster.tf
-111. modules/eks/cluster/cluster-security.tf
-112. modules/eks/cluster/cluster-encryption.tf
-113. modules/eks/cluster/cluster-logging.tf
-114. modules/eks/cluster/cluster-access.tf
-115. modules/eks/cluster/main.tf
+113. modules/eks-cluster/versions.tf
+114. modules/eks-cluster/variables.tf
+115. modules/eks-cluster/outputs.tf
+116. modules/eks-cluster/data.tf
+117. modules/eks-cluster/locals.tf
+118. modules/eks-cluster/cluster.tf
+119. modules/eks-cluster/cluster_security_group.tf
+120. modules/eks-cluster/cluster_encryption.tf
+121. modules/eks-cluster/cluster_logging.tf
+122. modules/eks-cluster/cluster_addons.tf
+123. modules/eks-cluster/node_groups.tf
+124. modules/eks-cluster/fargate_profiles.tf
+125. modules/eks-cluster/access_entries.tf
+126. modules/eks-cluster/main.tf
 ```
 
-### 4.3 Node Groups Tests First (RED)
+### 4.3 Local Cluster Modules (Kind & Rancher Desktop)
 
 ```markdown
-116. modules/eks/node-groups/testing/setup/main.tf
-117. modules/eks/node-groups/testing/node-groups-basic.tftest.hcl
-118. modules/eks/node-groups/testing/node-groups-scaling.tftest.hcl
-119. modules/eks/node-groups/testing/node-groups-security.tftest.hcl
-120. modules/eks/node-groups/testing/node-groups-mixed.tftest.hcl
-```
-
-### 4.4 Node Groups Implementation (GREEN)
-
-```markdown
-121. modules/eks/node-groups/versions.tf
-122. modules/eks/node-groups/variables.tf
-123. modules/eks/node-groups/outputs.tf
-124. modules/eks/node-groups/managed-node-groups.tf
-125. modules/eks/node-groups/launch-templates.tf
-126. modules/eks/node-groups/auto-scaling.tf
-127. modules/eks/node-groups/main.tf
-```
-
-### 4.5 Fargate Tests First (RED)
-
-```markdown
-128. modules/eks/fargate/testing/setup/main.tf
-129. modules/eks/fargate/testing/fargate-basic.tftest.hcl
-130. modules/eks/fargate/testing/fargate-security.tftest.hcl
-131. modules/eks/fargate/testing/fargate-networking.tftest.hcl
-```
-
-### 4.6 Fargate Implementation (GREEN)
-
-```markdown
-132. modules/eks/fargate/versions.tf
-133. modules/eks/fargate/variables.tf
-134. modules/eks/fargate/outputs.tf
-135. modules/eks/fargate/fargate-profiles.tf
-136. modules/eks/fargate/pod-execution-role.tf
-137. modules/eks/fargate/main.tf
+127. tests/unit/kind_cluster_test.tftest
+128. tests/unit/rancher_cluster_test.tftest
+129. modules/kind-cluster/versions.tf
+130. modules/kind-cluster/variables.tf
+131. modules/kind-cluster/outputs.tf
+132. modules/kind-cluster/cluster.tf
+133. modules/kind-cluster/config.tf
+134. modules/kind-cluster/networking.tf
+135. modules/kind-cluster/main.tf
+136. modules/rancher-cluster/versions.tf
+137. modules/rancher-cluster/variables.tf
+138. modules/rancher-cluster/outputs.tf
+139. modules/rancher-cluster/cluster.tf
+140. modules/rancher-cluster/config.tf
+141. modules/rancher-cluster/networking.tf
+142. modules/rancher-cluster/main.tf
 ```
 
 ## Phase 5: Core Add-ons (TDD Cycle 4 - Days 22-25)
@@ -252,24 +240,29 @@
 ### 5.1 Core Add-ons Tests First (RED)
 
 ```markdown
-138. modules/eks/addons/core/testing/setup/main.tf
-139. modules/eks/addons/core/testing/core-addons.tftest.hcl
-140. modules/eks/addons/core/testing/csi-drivers.tftest.hcl
-141. modules/eks/addons/core/testing/networking-addons.tftest.hcl
+143. tests/unit/core_addons_test.tftest
+144. tests/unit/core_addons_csi_test.tftest
+145. tests/unit/core_addons_networking_test.tftest
+146. tests/fixtures/core-addons/main.tf
+147. tests/fixtures/core-addons/variables.tf
+148. tests/fixtures/core-addons/outputs.tf
 ```
 
 ### 5.2 Core Add-ons Implementation (GREEN)
 
 ```markdown
-142. modules/eks/addons/core/versions.tf
-143. modules/eks/addons/core/variables.tf
-144. modules/eks/addons/core/outputs.tf
-145. modules/eks/addons/core/vpc-cni.tf
-146. modules/eks/addons/core/coredns.tf
-147. modules/eks/addons/core/kube-proxy.tf
-148. modules/eks/addons/core/ebs-csi.tf
-149. modules/eks/addons/core/efs-csi.tf
-150. modules/eks/addons/core/main.tf
+149. modules/eks-addons/core-addons/versions.tf
+150. modules/eks-addons/core-addons/variables.tf
+151. modules/eks-addons/core-addons/outputs.tf
+152. modules/eks-addons/core-addons/data.tf
+153. modules/eks-addons/core-addons/locals.tf
+154. modules/eks-addons/core-addons/vpc_cni.tf
+155. modules/eks-addons/core-addons/coredns.tf
+156. modules/eks-addons/core-addons/kube_proxy.tf
+157. modules/eks-addons/core-addons/ebs_csi.tf
+158. modules/eks-addons/core-addons/efs_csi.tf
+159. modules/eks-addons/core-addons/metrics_server.tf
+160. modules/eks-addons/core-addons/main.tf
 ```
 
 ## Phase 6: Ingress Controllers (TDD Cycle 5 - Days 26-29)
@@ -277,23 +270,27 @@
 ### 6.1 Ingress Tests First (RED)
 
 ```markdown
-151. modules/eks/addons/ingress/testing/setup/main.tf
-152. modules/eks/addons/ingress/testing/alb-controller.tftest.hcl
-153. modules/eks/addons/ingress/testing/nginx-ingress.tftest.hcl
-154. modules/eks/addons/ingress/testing/cilium-ingress.tftest.hcl
-155. modules/eks/addons/ingress/testing/ingress-security.tftest.hcl
+161. tests/unit/ingress_controller_test.tftest
+162. tests/unit/ingress_alb_test.tftest
+163. tests/unit/ingress_nginx_test.tftest
+164. tests/unit/ingress_cilium_test.tftest
+165. tests/fixtures/ingress-controller/main.tf
+166. tests/fixtures/ingress-controller/variables.tf
+167. tests/fixtures/ingress-controller/outputs.tf
 ```
 
 ### 6.2 Ingress Implementation (GREEN)
 
 ```markdown
-156. modules/eks/addons/ingress/versions.tf
-157. modules/eks/addons/ingress/variables.tf
-158. modules/eks/addons/ingress/outputs.tf
-159. modules/eks/addons/ingress/aws-load-balancer-controller.tf
-160. modules/eks/addons/ingress/nginx-ingress.tf
-161. modules/eks/addons/ingress/cilium-ingress.tf
-162. modules/eks/addons/ingress/main.tf
+168. modules/eks-addons/ingress-controller/versions.tf
+169. modules/eks-addons/ingress-controller/variables.tf
+170. modules/eks-addons/ingress-controller/outputs.tf
+171. modules/eks-addons/ingress-controller/data.tf
+172. modules/eks-addons/ingress-controller/locals.tf
+173. modules/eks-addons/ingress-controller/aws_load_balancer_controller.tf
+174. modules/eks-addons/ingress-controller/nginx_ingress.tf
+175. modules/eks-addons/ingress-controller/cilium.tf
+176. modules/eks-addons/ingress-controller/main.tf
 ```
 
 ## Phase 7: Autoscaling (TDD Cycle 6 - Days 30-33)
@@ -301,24 +298,27 @@
 ### 7.1 Autoscaling Tests First (RED)
 
 ```markdown
-163. modules/eks/addons/autoscaling/testing/setup/main.tf
-164. modules/eks/addons/autoscaling/testing/cluster-autoscaler.tftest.hcl
-165. modules/eks/addons/autoscaling/testing/karpenter.tftest.hcl
-166. modules/eks/addons/autoscaling/testing/vpa.tftest.hcl
-167. modules/eks/addons/autoscaling/testing/autoscaling-integration.tftest.hcl
+177. tests/unit/autoscaler_test.tftest
+178. tests/unit/autoscaler_cluster_test.tftest
+179. tests/unit/autoscaler_karpenter_test.tftest
+180. tests/unit/autoscaler_vpa_test.tftest
+181. tests/fixtures/autoscaler/main.tf
+182. tests/fixtures/autoscaler/variables.tf
+183. tests/fixtures/autoscaler/outputs.tf
 ```
 
 ### 7.2 Autoscaling Implementation (GREEN)
 
 ```markdown
-168. modules/eks/addons/autoscaling/versions.tf
-169. modules/eks/addons/autoscaling/variables.tf
-170. modules/eks/addons/autoscaling/outputs.tf
-171. modules/eks/addons/autoscaling/cluster-autoscaler.tf
-172. modules/eks/addons/autoscaling/karpenter.tf
-173. modules/eks/addons/autoscaling/vertical-pod-autoscaler.tf
-174. modules/eks/addons/autoscaling/metrics-server.tf
-175. modules/eks/addons/autoscaling/main.tf
+184. modules/eks-addons/autoscaler/versions.tf
+185. modules/eks-addons/autoscaler/variables.tf
+186. modules/eks-addons/autoscaler/outputs.tf
+187. modules/eks-addons/autoscaler/data.tf
+188. modules/eks-addons/autoscaler/locals.tf
+189. modules/eks-addons/autoscaler/cluster_autoscaler.tf
+190. modules/eks-addons/autoscaler/karpenter.tf
+191. modules/eks-addons/autoscaler/vertical_pod_autoscaler.tf
+192. modules/eks-addons/autoscaler/main.tf
 ```
 
 ## Phase 8: Certificate Management (TDD Cycle 7 - Days 34-36)
@@ -326,46 +326,55 @@
 ### 8.1 Certificate Tests First (RED)
 
 ```markdown
-176. modules/eks/addons/certificates/testing/setup/main.tf
-177. modules/eks/addons/certificates/testing/cert-manager.tftest.hcl
-178. modules/eks/addons/certificates/testing/external-dns.tftest.hcl
-179. modules/eks/addons/certificates/testing/tls-certificates.tftest.hcl
-180. modules/eks/addons/certificates/testing/certificate-lifecycle.tftest.hcl
+193. tests/unit/cert_manager_test.tftest
+194. tests/unit/cert_manager_issuers_test.tftest
+195. tests/unit/cert_manager_external_dns_test.tftest
+196. tests/fixtures/cert-manager/main.tf
+197. tests/fixtures/cert-manager/variables.tf
+198. tests/fixtures/cert-manager/outputs.tf
 ```
 
 ### 8.2 Certificate Implementation (GREEN)
 
-```markdown181. modules/eks/addons/certificates/versions.tf
-182. modules/eks/addons/certificates/variables.tf
-183. modules/eks/addons/certificates/outputs.tf
-184. modules/eks/addons/certificates/cert-manager.tf
-185. modules/eks/addons/certificates/external-dns.tf
-186. modules/eks/addons/certificates/cluster-issuers.tf
-187. modules/eks/addons/certificates/main.tf
+```markdown
+199. modules/eks-addons/cert-manager/versions.tf
+200. modules/eks-addons/cert-manager/variables.tf
+201. modules/eks-addons/cert-manager/outputs.tf
+202. modules/eks-addons/cert-manager/data.tf
+203. modules/eks-addons/cert-manager/locals.tf
+204. modules/eks-addons/cert-manager/cert_manager.tf
+205. modules/eks-addons/cert-manager/cluster_issuer.tf
+206. modules/eks-addons/cert-manager/external_dns.tf
+207. modules/eks-addons/cert-manager/main.tf
 ```
 
 ## Phase 9: Security Add-ons (TDD Cycle 8 - Days 37-40)
 
 ### 9.1 Security Add-ons Tests First (RED)
 
-```markdown188. modules/eks/addons/security/testing/setup/main.tf
-189. modules/eks/addons/security/testing/gatekeeper.tftest.hcl
-190. modules/eks/addons/security/testing/falco.tftest.hcl
-191. modules/eks/addons/security/testing/network-policies.tftest.hcl
-192. modules/eks/addons/security/testing/security-compliance.tftest.hcl
+```markdown
+208. tests/unit/security_stack_test.tftest
+209. tests/unit/security_gatekeeper_test.tftest
+210. tests/unit/security_falco_test.tftest
+211. tests/unit/security_network_policies_test.tftest
+212. tests/fixtures/security-stack/main.tf
+213. tests/fixtures/security-stack/variables.tf
+214. tests/fixtures/security-stack/outputs.tf
 ```
 
 ### 9.2 Security Add-ons Implementation (GREEN)
 
 ```markdown
-193. modules/eks/addons/security/versions.tf
-194. modules/eks/addons/security/variables.tf
-195. modules/eks/addons/security/outputs.tf
-196. modules/eks/addons/security/gatekeeper.tf
-197. modules/eks/addons/security/falco.tf
-198. modules/eks/addons/security/policy-agent.tf
-199. modules/eks/addons/security/network-policies.tf
-200. modules/eks/addons/security/main.tf
+215. modules/eks-addons/security-stack/versions.tf
+216. modules/eks-addons/security-stack/variables.tf
+217. modules/eks-addons/security-stack/outputs.tf
+218. modules/eks-addons/security-stack/data.tf
+219. modules/eks-addons/security-stack/locals.tf
+220. modules/eks-addons/security-stack/opa_gatekeeper.tf
+221. modules/eks-addons/security-stack/falco.tf
+222. modules/eks-addons/security-stack/policy_agent.tf
+223. modules/eks-addons/security-stack/network_policies.tf
+224. modules/eks-addons/security-stack/main.tf
 ```
 
 ## Phase 10: Monitoring Stack (TDD Cycle 9 - Days 41-44)
@@ -373,24 +382,28 @@
 ### 10.1 Monitoring Tests First (RED)
 
 ```markdown
-201. modules/eks/addons/monitoring/testing/setup/main.tf
-202. modules/eks/addons/monitoring/testing/prometheus.tftest.hcl
-203. modules/eks/addons/monitoring/testing/grafana.tftest.hcl
-204. modules/eks/addons/monitoring/testing/alerting.tftest.hcl
-205. modules/eks/addons/monitoring/testing/monitoring-integration.tftest.hcl
+225. tests/unit/monitoring_test.tftest
+226. tests/unit/monitoring_prometheus_test.tftest
+227. tests/unit/monitoring_grafana_test.tftest
+228. tests/unit/monitoring_alerting_test.tftest
+229. tests/fixtures/monitoring/main.tf
+230. tests/fixtures/monitoring/variables.tf
+231. tests/fixtures/monitoring/outputs.tf
 ```
 
 ### 10.2 Monitoring Implementation (GREEN)
 
 ```markdown
-206. modules/eks/addons/monitoring/versions.tf
-207. modules/eks/addons/monitoring/variables.tf
-208. modules/eks/addons/monitoring/outputs.tf
-209. modules/eks/addons/monitoring/prometheus.tf
-210. modules/eks/addons/monitoring/grafana.tf
-211. modules/eks/addons/monitoring/alertmanager.tf
-212. modules/eks/addons/monitoring/jaeger.tf
-213. modules/eks/addons/monitoring/main.tf
+232. modules/eks-addons/monitoring/versions.tf
+233. modules/eks-addons/monitoring/variables.tf
+234. modules/eks-addons/monitoring/outputs.tf
+235. modules/eks-addons/monitoring/data.tf
+236. modules/eks-addons/monitoring/locals.tf
+237. modules/eks-addons/monitoring/prometheus.tf
+238. modules/eks-addons/monitoring/grafana.tf
+239. modules/eks-addons/monitoring/alertmanager.tf
+240. modules/eks-addons/monitoring/jaeger.tf
+241. modules/eks-addons/monitoring/main.tf
 ```
 
 ## Phase 11: Observability Module (TDD Cycle 10 - Days 45-47)
@@ -398,27 +411,31 @@
 ### 11.1 Observability Tests First (RED)
 
 ```markdown
-214. modules/observability/testing/setup/main.tf
-215. modules/observability/testing/cloudwatch.tftest.hcl
-216. modules/observability/testing/cloudtrail.tftest.hcl
-217. modules/observability/testing/security-services.tftest.hcl
-218. modules/observability/testing/compliance-monitoring.tftest.hcl
+242. tests/unit/observability_test.tftest
+243. tests/unit/observability_cloudwatch_test.tftest
+244. tests/unit/observability_cloudtrail_test.tftest
+245. tests/unit/observability_security_test.tftest
+246. tests/fixtures/observability/main.tf
+247. tests/fixtures/observability/variables.tf
+248. tests/fixtures/observability/outputs.tf
 ```
 
 ### 11.2 Observability Implementation (GREEN)
 
 ```markdown
-219. modules/observability/versions.tf
-220. modules/observability/variables.tf
-221. modules/observability/outputs.tf
-222. modules/observability/cloudwatch.tf
-223. modules/observability/cloudtrail.tf
-224. modules/observability/config.tf
-225. modules/observability/guardduty.tf
-226. modules/observability/security-hub.tf
-227. modules/observability/inspector.tf
-228. modules/observability/xray.tf
-229. modules/observability/main.tf
+249. modules/observability/versions.tf
+250. modules/observability/variables.tf
+251. modules/observability/outputs.tf
+252. modules/observability/data.tf
+253. modules/observability/locals.tf
+254. modules/observability/cloudwatch.tf
+255. modules/observability/cloudtrail.tf
+256. modules/observability/config.tf
+257. modules/observability/guard_duty.tf
+258. modules/observability/security_hub.tf
+259. modules/observability/inspector.tf
+260. modules/observability/xray.tf
+261. modules/observability/main.tf
 ```
 
 ## Phase 12: Terraform Stacks Implementation (TDD Cycle 11 - Days 48-52)
@@ -426,890 +443,1067 @@
 ### 12.1 Shared Stack Components
 
 ```markdown
-230. stacks/shared/providers.tfstack.hcl
-231. stacks/shared/variables.tfstack.hcl
-232. stacks/shared/locals.tfstack.hcl
+262. stacks/shared/backend.tfstack
+263. stacks/shared/provider.tfstack
+264. stacks/shared/common.tfvars
+265. stacks/shared/locals.tf
+```
+
+### 12.2 Test Stack (Kind Cluster) - Tests First (RED)
+
+```markdown
+266. tests/integration/test_stack_test.tftest
+267. tests/integration/test_stack_kind_test.tftest
+268. tests/integration/test_stack_networking_test.tftest
+269. tests/integration/test_stack_security_test.tftest
+```
+
+### 12.3 Test Stack Implementation (GREEN)
+
+```markdown
+270. stacks/test/stack.tfstack
+271. stacks/test/deployment.tfdeploy
+272. stacks/test/terraform.tfvars
+273. stacks/test/locals.tf
+274. stacks/test/components/networking/main.tf
+275. stacks/test/components/networking/variables.tf
+276. stacks/test/components/networking/outputs.tf
+277. stacks/test/components/kind-cluster/main.tf
+278. stacks/test/components/kind-cluster/variables.tf
+279. stacks/test/components/kind-cluster/outputs.tf
+280. stacks/test/components/security/main.tf
+281. stacks/test/components/security/variables.tf
+282. stacks/test/components/security/outputs.tf
+283. stacks/test/components/addons/main.tf
+284. stacks/test/components/addons/variables.tf
+285. stacks/test/components/addons/outputs.tf
+```
+
+### 12.4 Dev Stack (Rancher Desktop) - Tests First (RED)
+
+```markdown
+286. tests/integration/dev_stack_test.tftest
+287. tests/integration/dev_stack_rancher_test.tftest
+288. tests/integration/dev_stack_networking_test.tftest
+289. tests/integration/dev_stack_security_test.tftest
+```
+
+### 12.5 Dev Stack Implementation (GREEN)
+
+```markdown
+290. stacks/dev/stack.tfstack
+291. stacks/dev/deployment.tfdeploy
+292. stacks/dev/terraform.tfvars
+293. stacks/dev/locals.tf
+294. stacks/dev/components/networking/main.tf
+295. stacks/dev/components/networking/variables.tf
+296. stacks/dev/components/networking/outputs.tf
+297. stacks/dev/components/rancher-cluster/main.tf
+298. stacks/dev/components/rancher-cluster/variables.tf
+299. stacks/dev/components/rancher-cluster/outputs.tf
+300. stacks/dev/components/security/main.tf
+301. stacks/dev/components/security/variables.tf
+302. stacks/dev/components/security/outputs.tf
+303. stacks/dev/components/addons/main.tf
+304. stacks/dev/components/addons/variables.tf
+305. stacks/dev/components/addons/outputs.tf
+```
+
+### 12.6 Pre-Prod Stack (AWS EKS) - Tests First (RED)
+
+```markdown
+306. tests/integration/pre_prod_stack_test.tftest
+307. tests/integration/pre_prod_aws_test.tftest
+308. tests/integration/pre_prod_eks_test.tftest
+309. tests/integration/pre_prod_security_test.tftest
+```
+
+### 12.7 Pre-Prod Stack Implementation (GREEN)
+
+```markdown
+310. stacks/pre-prod/stack.tfstack
+311. stacks/pre-prod/deployment.tfdeploy
+312. stacks/pre-prod/terraform.tfvars
+313. stacks/pre-prod/locals.tf
+314. stacks/pre-prod/components/global/kms/main.tf
+315. stacks/pre-prod/components/global/kms/variables.tf
+316. stacks/pre-prod/components/global/kms/outputs.tf
+317. stacks/pre-prod/components/global/route53/main.tf
+318. stacks/pre-prod/components/global/route53/variables.tf
+319. stacks/pre-prod/components/global/route53/outputs.tf
+320. stacks/pre-prod/components/global/iam-global/main.tf
+321. stacks/pre-prod/components/global/iam-global/variables.tf
+322. stacks/pre-prod/components/global/iam-global/outputs.tf
+323. stacks/pre-prod/components/vpc/main.tf
+324. stacks/pre-prod/components/vpc/variables.tf
+325. stacks/pre-prod/components/vpc/outputs.tf
+326. stacks/pre-prod/components/iam/main.tf
+327. stacks/pre-prod/components/iam/variables.tf
+328. stacks/pre-prod/components/iam/outputs.tf
+329. stacks/pre-prod/components/security/main.tf
+330. stacks/pre-prod/components/security/variables.tf
+331. stacks/pre-prod/components/security/outputs.tf
+332. stacks/pre-prod/components/eks-cluster/main.tf
+333. stacks/pre-prod/components/eks-cluster/variables.tf
+334. stacks/pre-prod/components/eks-cluster/outputs.tf
+335. stacks/pre-prod/components/eks-addons/core-addons/main.tf
+336. stacks/pre-prod/components/eks-addons/core-addons/variables.tf
+337. stacks/pre-prod/components/eks-addons/core-addons/outputs.tf
+338. stacks/pre-prod/components/eks-addons/ingress-controller/main.tf
+339. stacks/pre-prod/components/eks-addons/ingress-controller/variables.tf
+340. stacks/pre-prod/components/eks-addons/ingress-controller/outputs.tf
+341. stacks/pre-prod/components/eks-addons/autoscaler/main.tf
+342. stacks/pre-prod/components/eks-addons/autoscaler/variables.tf
+343. stacks/pre-prod/components/eks-addons/autoscaler/outputs.tf
+344. stacks/pre-prod/components/eks-addons/cert-manager/main.tf
+345. stacks/pre-prod/components/eks-addons/cert-manager/variables.tf
+346. stacks/pre-prod/components/eks-addons/cert-manager/outputs.tf
+347. stacks/pre-prod/components/eks-addons/monitoring/main.tf
+348. stacks/pre-prod/components/eks-addons/monitoring/variables.tf
+349. stacks/pre-prod/components/eks-addons/monitoring/outputs.tf
+350. stacks/pre-prod/components/eks-addons/security-stack/main.tf
+351. stacks/pre-prod/components/eks-addons/security-stack/variables.tf
+352. stacks/pre-prod/components/eks-addons/security-stack/outputs.tf
+353. stacks/pre-prod/components/observability/main.tf
+354. stacks/pre-prod/components/observability/variables.tf
+355. stacks/pre-prod/components/observability/outputs.tf
+```
+
+### 12.8 Prod Stack (AWS EKS) - Tests First (RED)
+
+```markdown
+356. tests/integration/prod_stack_test.tftest
+357. tests/integration/prod_aws_test.tftest
+358. tests/integration/prod_eks_test.tftest
+359. tests/integration/prod_security_test.tftest
+```
+
+### 12.9 Prod Stack Implementation (GREEN)
+
+```markdown
+360. stacks/prod/stack.tfstack
+361. stacks/prod/deployment.tfdeploy
+362. stacks/prod/terraform.tfvars
+363. stacks/prod/locals.tf
+364. stacks/prod/components/global/kms/main.tf
+365. stacks/prod/components/global/kms/variables.tf
+366. stacks/prod/components/global/kms/outputs.tf
+367. stacks/prod/components/global/route53/main.tf
+368. stacks/prod/components/global/route53/variables.tf
+369. stacks/prod/components/global/route53/outputs.tf
+370. stacks/prod/components/global/iam-global/main.tf
+371. stacks/prod/components/global/iam-global/variables.tf
+372. stacks/prod/components/global/iam-global/outputs.tf
+373. stacks/prod/components/vpc/main.tf
+374. stacks/prod/components/vpc/variables.tf
+375. stacks/prod/components/vpc/outputs.tf
+376. stacks/prod/components/iam/main.tf
+377. stacks/prod/components/iam/variables.tf
+378. stacks/prod/components/iam/outputs.tf
+379. stacks/prod/components/security/main.tf
+380. stacks/prod/components/security/variables.tf
+381. stacks/prod/components/security/outputs.tf
+382. stacks/prod/components/eks-cluster/main.tf
+383. stacks/prod/components/eks-cluster/variables.tf
+384. stacks/prod/components/eks-cluster/outputs.tf
+385. stacks/prod/components/eks-addons/core-addons/main.tf
+386. stacks/prod/components/eks-addons/core-addons/variables.tf
+387. stacks/prod/components/eks-addons/core-addons/outputs.tf
+388. stacks/prod/components/eks-addons/ingress-controller/main.tf
+389. stacks/prod/components/eks-addons/ingress-controller/variables.tf
+390. stacks/prod/components/eks-addons/ingress-controller/outputs.tf
+391. stacks/prod/components/eks-addons/autoscaler/main.tf
+392. stacks/prod/components/eks-addons/autoscaler/variables.tf
+393. stacks/prod/components/eks-addons/autoscaler/outputs.tf
+394. stacks/prod/components/eks-addons/cert-manager/main.tf
+395. stacks/prod/components/eks-addons/cert-manager/variables.tf
+396. stacks/prod/components/eks-addons/cert-manager/outputs.tf
+397. stacks/prod/components/eks-addons/monitoring/main.tf
+398. stacks/prod/components/eks-addons/monitoring/variables.tf
+399. stacks/prod/components/eks-addons/monitoring/outputs.tf
+400. stacks/prod/components/eks-addons/security-stack/main.tf
+401. stacks/prod/components/eks-addons/security-stack/variables.tf
+402. stacks/prod/components/eks-addons/security-stack/outputs.tf
+403. stacks/prod/components/observability/main.tf
+404. stacks/prod/components/observability/variables.tf
+405. stacks/prod/components/observability/outputs.tf
 ```
 
-### 12.2 Networking Stack Tests First (RED)
+### 12.10 Root Stack Configuration
 
 ```markdown
-233. stacks/networking/testing/setup/main.tf
-234. stacks/networking/testing/networking.tftest.hcl
-235. stacks/networking/testing/security.tftest.hcl
-236. stacks/networking/testing/compliance.tftest.hcl
+406. stacks/stack.tfstack
+407. stacks/deployments.tfdeploy
 ```
 
-### 12.3 Networking Stack Implementation (GREEN)
+## Phase 13: Integration Testing (TDD Cycle 12 - Days 53-60)
 
-```markdown
-237. stacks/networking/variables.tf
-238. stacks/networking/outputs.tf
-239. stacks/networking/networking.tfstack.hcl
-```
-
-### 12.4 Security Stack Tests First (RED)
-
-```markdown
-240. stacks/security/testing/setup/main.tf
-241. stacks/security/testing/iam.tftest.hcl
-242. stacks/security/testing/kms.tftest.hcl
-243. stacks/security/testing/secrets.tftest.hcl
-244. stacks/security/testing/policies.tftest.hcl
-```
-
-### 12.5 Security Stack Implementation (GREEN)
-
-```markdown
-245. stacks/security/variables.tf
-246. stacks/security/outputs.tf
-247. stacks/security/security.tfstack.hcl
-```
-
-### 12.6 Compute Stack Tests First (RED)
-
-```markdown
-248. stacks/compute/testing/setup/main.tf
-249. stacks/compute/testing/cluster.tftest.hcl
-250. stacks/compute/testing/node-groups.tftest.hcl
-251. stacks/compute/testing/fargate.tftest.hcl
-252. stacks/compute/testing/addons.tftest.hcl
-```
-
-### 12.7 Compute Stack Implementation (GREEN)
-
-```markdown
-253. stacks/compute/variables.tf
-254. stacks/compute/outputs.tf
-255. stacks/compute/compute.tfstack.hcl
-```
-
-### 12.8 Platform Stack Tests First (RED)
-
-```markdown
-256. stacks/platform/testing/setup/main.tf
-257. stacks/platform/testing/ingress.tftest.hcl
-258. stacks/platform/testing/autoscaling.tftest.hcl
-259. stacks/platform/testing/certificates.tftest.hcl
-260. stacks/platform/testing/monitoring.tftest.hcl
-```
-
-### 12.9 Platform Stack Implementation (GREEN)
-
-```markdown
-261. stacks/platform/variables.tf
-262. stacks/platform/outputs.tf
-263. stacks/platform/platform.tfstack.hcl
-```
-
-### 12.10 Observability Stack Tests First (RED)
-
-```markdown
-264. stacks/observability/testing/setup/main.tf
-265. stacks/observability/testing/monitoring.tftest.hcl
-266. stacks/observability/testing/logging.tftest.hcl
-267. stacks/observability/testing/alerting.tftest.hcl
-268. stacks/observability/testing/tracing.tftest.hcl
-```
-
-### 12.11 Observability Stack Implementation (GREEN)
-
-```markdown
-269. stacks/observability/variables.tf
-270. stacks/observability/outputs.tf
-271. stacks/observability/observability.tfstack.hcl
-```
-
-## Phase 13: Deployments & Environments (TDD Cycle 12 - Days 53-55)
-
-### 13.1 Deployment Configuration
-
-```markdown
-272. stacks/deployments.tfdeploy.hcl
-273. environments/shared/backend.tf
-274. environments/shared/common-variables.tf
-275. environments/shared/common-locals.tf
-276. environments/dev.tfdeploy.hcl
-277. environments/staging.tfdeploy.hcl
-278. environments/prod.tfdeploy.hcl
-279. configs/deployment/deployment-config.yaml
-280. configs/deployment/environment-config.yaml
-281. configs/deployment/stack-config.yaml
-```
-
-## Phase 14: Integration Testing (TDD Cycle 13 - Days 56-60)
-
-### 14.1 Integration Tests
-
-```markdown
-282. tests/integration/full-stack.tftest.hcl
-283. tests/integration/security-integration.tftest.hcl
-284. tests/integration/networking-integration.tftest.hcl
-285. tests/integration/compute-integration.tftest.hcl
-286. tests/integration/platform-integration.tftest.hcl
-```
-
-### 14.2 E2E Tests
-
-```markdown
-287. tests/e2e/deployment.tftest.hcl
-288. tests/e2e/upgrade.tftest.hcl
-289. tests/e2e/disaster-recovery.tftest.hcl
-290. tests/e2e/performance.tftest.hcl
-```
-
-### 14.3 Compliance Tests
-
-```markdown
-291. tests/compliance/cis-benchmarks.tftest.hcl
-292. tests/compliance/nist-compliance.tftest.hcl
-293. tests/compliance/pci-dss.tftest.hcl
-294. tests/compliance/security-baseline.tftest.hcl
-```
-
-### 14.4 Security Tests
-
-```markdown
-295. tests/security/penetration-test.tftest.hcl
-296. tests/security/vulnerability-scan.tftest.hcl
-297. tests/security/network-isolation.tftest.hcl
-298. tests/security/zero-trust-validation.tftest.hcl
-```
-
-## Phase 15: Kubernetes Manifests (Days 61-64)
-
-### 15.1 Base Manifests
-
-```markdown
-299. manifests/base/kustomization.yaml
-300. manifests/base/namespace.yaml
-301. manifests/base/common-labels.yaml
-302. manifests/kustomization.yaml
-```
-
-### 15.2 Environment Overlays
-
-```markdown
-303. manifests/overlays/dev/kustomization.yaml
-304. manifests/overlays/dev/patches/replica-patch.yaml
-305. manifests/overlays/dev/patches/resource-patch.yaml
-306. manifests/overlays/dev/configmaps/app-config.yaml
-307. manifests/overlays/staging/kustomization.yaml
-308. manifests/overlays/staging/patches/replica-patch.yaml
-309. manifests/overlays/staging/patches/resource-patch.yaml
-310. manifests/overlays/staging/configmaps/app-config.yaml
-311. manifests/overlays/prod/kustomization.yaml
-312. manifests/overlays/prod/patches/replica-patch.yaml
-313. manifests/overlays/prod/patches/resource-patch.yaml
-314. manifests/overlays/prod/configmaps/app-config.yaml
-```
-
-### 15.3 Namespaces
-
-```markdown
-315. manifests/namespaces/kube-system.yaml
-316. manifests/namespaces/cert-manager.yaml
-317. manifests/namespaces/ingress-nginx.yaml
-318. manifests/namespaces/monitoring.yaml
-319. manifests/namespaces/security.yaml
-320. manifests/namespaces/applications.yaml
-```
-
-### 15.4 Security Manifests
-
-```markdown
-321. manifests/security/network-policies/default-deny.yaml
-322. manifests/security/network-policies/allow-dns.yaml
-323. manifests/security/network-policies/allow-ingress.yaml
-324. manifests/security/network-policies/namespace-isolation.yaml
-325. manifests/security/pod-security/restricted-pss.yaml
-326. manifests/security/pod-security/baseline-pss.yaml
-327. manifests/security/pod-security/namespace-labels.yaml
-328. manifests/security/rbac/cluster-roles.yaml
-329. manifests/security/rbac/role-bindings.yaml
-330. manifests/security/rbac/service-accounts.yaml
-```
-
-### 15.5 Gatekeeper Configuration
-
-```markdown
-331. manifests/security/gatekeeper/constraints/required-labels.yaml
-332. manifests/security/gatekeeper/constraints/allowed-repos.yaml
-333. manifests/security/gatekeeper/constraints/resource-limits.yaml
-334. manifests/security/gatekeeper/constraints/security-context.yaml
-335. manifests/security/gatekeeper/constraints/pod-security.yaml
-336. manifests/security/gatekeeper/templates/k8srequiredlabels.yaml
-337. manifests/security/gatekeeper/templates/k8sallowedrepos.yaml
-338. manifests/security/gatekeeper/templates/k8srequiredresources.yaml
-339. manifests/security/gatekeeper/templates/k8ssecuritycontext.yaml
-340. manifests/security/gatekeeper/templates/k8spodsecurity.yaml
-341. manifests/security/gatekeeper/config.yaml
-```
-
-### 15.6 Falco Configuration
-
-```markdown
-342. manifests/security/falco/falco-config.yaml
-343. manifests/security/falco/falco-rules.yaml
-344. manifests/security/falco/custom-rules.yaml
-```
-
-### 15.7 Ingress Manifests
-
-```markdown
-345. manifests/ingress/certificates/cluster-issuer.yaml
-346. manifests/ingress/certificates/certificates.yaml
-347. manifests/ingress/certificates/certificate-templates.yaml
-348. manifests/ingress/nginx/configmap.yaml
-349. manifests/ingress/nginx/ingress-class.yaml
-350. manifests/ingress/nginx/default-backend.yaml
-351. manifests/ingress/alb/ingress-class.yaml
-352. manifests/ingress/alb/target-group-binding.yaml
-353. manifests/ingress/alb/annotations.yaml
-354. manifests/ingress/cilium/gateway-api.yaml
-355. manifests/ingress/cilium/httproute.yaml
-356. manifests/ingress/cilium/l7-policies.yaml
-```
-
-### 15.8 Autoscaling Manifests
-
-```markdown
-357. manifests/autoscaling/hpa/application-hpa.yaml
-358. manifests/autoscaling/hpa/custom-metrics-hpa.yaml
-359. manifests/autoscaling/hpa/behavior-hpa.yaml
-360. manifests/autoscaling/vpa/vpa-deployment.yaml
-361. manifests/autoscaling/vpa/vpa-recommender.yaml
-362. manifests/autoscaling/vpa/vpa-updater.yaml
-363. manifests/autoscaling/cluster-autoscaler/deployment.yaml
-364. manifests/autoscaling/cluster-autoscaler/configmap.yaml
-365. manifests/autoscaling/cluster-autoscaler/priority-expander.yaml
-366. manifests/autoscaling/karpenter/nodepool.yaml
-367. manifests/autoscaling/karpenter/nodeclass.yaml
-368. manifests/autoscaling/karpenter/disruption.yaml
-```
-
-### 15.9 Monitoring Manifests
-
-```markdown
-369. manifests/monitoring/prometheus/prometheus-config.yaml
-370. manifests/monitoring/prometheus/alert-rules/cluster-rules.yaml
-371. manifests/monitoring/prometheus/alert-rules/node-rules.yaml
-372. manifests/monitoring/prometheus/alert-rules/pod-rules.yaml
-373. manifests/monitoring/prometheus/alert-rules/application-rules.yaml
-374. manifests/monitoring/prometheus/service-monitors/kubernetes-sm.yaml
-375. manifests/monitoring/prometheus/service-monitors/nginx-sm.yaml
-376. manifests/monitoring/prometheus/service-monitors/application-sm.yaml
-377. manifests/monitoring/prometheus/recording-rules.yaml
-378. manifests/monitoring/grafana/grafana-config.yaml
-379. manifests/monitoring/grafana/dashboards/cluster-overview.json
-380. manifests/monitoring/grafana/dashboards/node-metrics.json
-381. manifests/monitoring/grafana/dashboards/pod-metrics.json
-382. manifests/monitoring/grafana/dashboards/ingress-metrics.json
-383. manifests/monitoring/grafana/dashboards/security-metrics.json
-384. manifests/monitoring/grafana/datasources.yaml
-385. manifests/monitoring/grafana/notification-channels.yaml
-386. manifests/monitoring/alertmanager/alertmanager-config.yaml
-387. manifests/monitoring/alertmanager/notification-templates/slack.tmpl
-388. manifests/monitoring/alertmanager/notification-templates/email.tmpl
-389. manifests/monitoring/alertmanager/notification-templates/pagerduty.tmpl
-390. manifests/monitoring/alertmanager/silence-rules.yaml
-```
-
-## Phase 16: Policy & Compliance (Days 65-67)
-
-### 16.1 Terraform Policies
-
-```markdown
-391. policies/terraform/stack-policies.tf
-392. policies/terraform/security-policies.tf
-393. policies/terraform/compliance-policies.tf
-394. policies/terraform/cost-policies.tf
-```
-
-### 16.2 OPA Policies
-
-```markdown
-395. policies/opa/security.rego
-396. policies/opa/networking.rego
-397. policies/opa/resources.rego
-398. policies/opa/compliance.rego
-399. policies/opa/admission.rego
-```
-
-### 16.3 Sentinel Policies
-
-```markdown
-400. policies/sentinel/cost-control.sentinel
-401. policies/sentinel/security-compliance.sentinel
-402. policies/sentinel/resource-governance.sentinel
-403. policies/sentinel/policy-sets.hcl
-```
-
-### 16.4 Checkov Configuration
-
-```markdown
-404. policies/checkov/.checkov.yaml
-405. policies/checkov/custom-checks/eks-encryption.py
-406. policies/checkov/custom-checks/vpc-flow-logs.py
-407. policies/checkov/custom-checks/iam-least-privilege.py
-408. policies/checkov/custom-checks/security-groups.py
-409. policies/checkov/suppressions/known-issues.yaml
-410. policies/checkov/suppressions/false-positives.yaml
-```
-
-## Phase 17: Scripts & Automation (Days 68-70)
-
-### 17.1 Stack Management Scripts
-
-```markdown
-411. scripts/stack-management/deploy-stack.sh
-412. scripts/stack-management/plan-stack.sh
-413. scripts/stack-management/destroy-stack.sh
-414. scripts/stack-management/validate-stack.sh
-415. scripts/stack-management/test-stack.sh
-```
-
-### 17.2 Testing Scripts
-
-```markdown
-416. scripts/testing/run-integration-tests.sh
-417. scripts/testing/run-e2e-tests.sh
-418. scripts/testing/run-security-tests.sh
-419. scripts/testing/run-compliance-tests.sh
-```
-
-### 17.3 Utility Scripts
-
-```markdown
-420. scripts/utilities/generate-stack-config.sh
-421. scripts/utilities/validate-deployment.sh
-422. scripts/utilities/cost-estimation.sh
-423. scripts/utilities/security-scan.sh
-424. scripts/utilities/backup-state.sh
-```
+### 13.1 Integration Tests
 
-### 17.4 CI/CD Scripts
-
 ```markdown
-425. scripts/ci-cd/pipeline-deploy.sh
-426. scripts/ci-cd/pipeline-test.sh
-427. scripts/ci-cd/pipeline-security.sh
-428. scripts/ci-cd/pipeline-compliance.sh
+408. tests/integration/full_stack_integration_test.tftest
+409. tests/integration/security_integration_test.tftest
+410. tests/integration/networking_integration_test.tftest
+411. tests/integration/vpc_integration_test.tftest
+412. tests/integration/iam_integration_test.tftest
+413. tests/integration/eks_integration_test.tftest
+414. tests/integration/addons_integration_test.tftest
 ```
 
-## Phase 18: Advanced GitHub Actions (Days 71-73)
+### 13.2 E2E Tests
 
-### 18.1 Core Workflows
-
 ```markdown
-429. .github/workflows/terraform-stacks-plan.yml
-430. .github/workflows/terraform-stacks-apply.yml
-431. .github/workflows/terraform-test-integration.yml
-432. .github/workflows/terraform-test-e2e.yml
-433. .github/workflows/security-scan.yml
-434. .github/workflows/compliance-check.yml
-435. .github/workflows/cost-estimation.yml
+415. tests/e2e/e2e_test.tftest
+416. tests/e2e/deployment_test.tftest
+417. tests/e2e/security_compliance_test.tftest
+418. tests/e2e/performance_test.tftest
+419. tests/e2e/disaster_recovery_test.tftest
+420. tests/e2e/upgrade_test.tftest
 ```
 
-### 18.2 Additional GitHub Actions
+### 13.3 Test Helpers
 
 ```markdown
-436. .github/actions/aws-assume-role/action.yml
-437. .github/actions/aws-assume-role/assume-role.sh
-438. .github/actions/k8s-setup/action.yml
-439. .github/actions/k8s-setup/kubectl-setup.sh
-440. .github/actions/security-scanning/action.yml
-441. .github/actions/security-scanning/security-scan.sh
-442. .github/actions/compliance-validation/action.yml
-443. .github/actions/compliance-validation/compliance-check.sh
+421. tests/helpers/aws.tftest
+422. tests/helpers/k8s.tftest
+423. tests/helpers/helm.tftest
+424. tests/helpers/retry.tftest
+425. tests/helpers/random.tftest
 ```
 
-### 18.3 GitHub Templates
+### 13.4 Test Mocks
 
 ```markdown
-444. .github/ISSUE_TEMPLATE/bug-report.md
-445. .github/ISSUE_TEMPLATE/feature-request.md
-446. .github/ISSUE_TEMPLATE/security-issue.md
-447. .github/ISSUE_TEMPLATE/infrastructure-change.md
-448. .github/PULL_REQUEST_TEMPLATE.md
+426. tests/mocks/aws_mock.tftest
+427. tests/mocks/k8s_mock.tftest
+428. tests/mocks/helm_mock.tftest
 ```
-
-## Phase 19: Tools & Development Environment (Days 74-76)
 
-### 19.1 Terraform Stack Tools
+## Phase 14: Kubernetes Manifests (Days 61-64)
 
-```markdown
-449. tools/terraform-stacks/stack-validator.py
-450. tools/terraform-stacks/deployment-planner.py
-451. tools/terraform-stacks/stack-dependency-analyzer.py
-452. tools/terraform-stacks/cost-calculator.py
-```
+### 14.1 Base Manifests
 
-### 19.2 Testing Tools
-
 ```markdown
-453. tools/testing/test-runner.py
-454. tools/testing/test-reporter.py
-455. tools/testing/mock-generator.py
-456. tools/testing/coverage-analyzer.py
+429. manifests/kustomization.yaml
+430. manifests/base/kustomization.yaml
+431. manifests/base/namespace.yaml
+432. manifests/base/common-labels.yaml
 ```
 
-### 19.3 Security Tools
+### 14.2 Environment Overlays
 
 ```markdown
-457. tools/security/vulnerability-scanner.py
-458. tools/security/compliance-checker.py
-459. tools/security/policy-validator.py
-460. tools/security/secret-detector.py
+433. manifests/overlays/test/kustomization.yaml
+434. manifests/overlays/test/replica-patch.yaml
+435. manifests/overlays/test/resource-patch.yaml
+436. manifests/overlays/dev/kustomization.yaml
+437. manifests/overlays/dev/replica-patch.yaml
+438. manifests/overlays/dev/resource-patch.yaml
+439. manifests/overlays/pre-prod/kustomization.yaml
+440. manifests/overlays/pre-prod/replica-patch.yaml
+441. manifests/overlays/pre-prod/resource-patch.yaml
+442. manifests/overlays/prod/kustomization.yaml
+443. manifests/overlays/prod/replica-patch.yaml
+444. manifests/overlays/prod/resource-patch.yaml
 ```
 
-### 19.4 DevContainer Configuration
+### 14.3 Namespaces
 
 ```markdown
-461. .devcontainer/devcontainer.json
-462. .devcontainer/Dockerfile
-463. .devcontainer/docker-compose.yml
-464. .devcontainer/post-create.sh
+445. manifests/namespaces/kube-system.yaml
+446. manifests/namespaces/cert-manager.yaml
+447. manifests/namespaces/ingress-nginx.yaml
+448. manifests/namespaces/monitoring.yaml
+449. manifests/namespaces/security.yaml
+450. manifests/namespaces/applications.yaml
 ```
 
-### 19.5 IDE Configuration
+### 14.4 Network Policies
 
 ```markdown
-465. .vscode/settings.json
-466. .vscode/extensions.json
-467. .vscode/launch.json
-468. .vscode/tasks.json
-469. .vscode/snippets/terraform.json
-470. .vscode/snippets/go.json
-471. .idea/terraform-eks.iml
-472. .idea/modules.xml
-473. .idea/misc.xml
-474. .idea/vcs.xml
-475. .idea/inspectionProfiles/Project_Default.xml
+451. manifests/network-policies/default-deny-all.yaml
+452. manifests/network-policies/allow-dns.yaml
+453. manifests/network-policies/allow-same-namespace.yaml
+454. manifests/network-policies/ingress-controller-policy.yaml
+455. manifests/network-policies/monitoring-policy.yaml
 ```
-
-## Phase 20: Examples & Documentation (Days 77-80)
 
-### 20.1 Example Deployments
+### 14.5 Pod Security Standards
 
 ```markdown
-476. examples/minimal-deployment/README.md
-477. examples/minimal-deployment/minimal.tfdeploy.hcl
-478. examples/minimal-deployment/variables.tf
-479. examples/minimal-deployment/testing/minimal.tftest.hcl
-480. examples/complete-deployment/README.md
-481. examples/complete-deployment/complete.tfdeploy.hcl
-482. examples/complete-deployment/variables.tf
-483. examples/complete-deployment/testing/complete.tftest.hcl
-484. examples/complete-deployment/testing/security-validation.tftest.hcl
-485. examples/multi-region/README.md
-486. examples/multi-region/multi-region.tfdeploy.hcl
-487. examples/multi-region/variables.tf
-488. examples/multi-region/testing/multi-region.tftest.hcl
-489. examples/multi-region/testing/failover.tftest.hcl
-490. examples/security-hardened/README.md
-491. examples/security-hardened/security-hardened.tfdeploy.hcl
-492. examples/security-hardened/variables.tf
-493. examples/security-hardened/security-policies.tf
-494. examples/security-hardened/testing/security-baseline.tftest.hcl
-495. examples/security-hardened/testing/compliance-validation.tftest.hcl
-496. examples/security-hardened/testing/penetration-test.tftest.hcl
+456. manifests/pod-security-standards/restricted-pss.yaml
+457. manifests/pod-security-standards/baseline-pss.yaml
+458. manifests/pod-security-standards/privileged-pss.yaml
+459. manifests/pod-security-standards/namespace-labels.yaml
 ```
 
-### 20.2 Core Documentation
+### 14.6 RBAC Manifests
 
 ```markdown
-497. docs/architecture/overview.md
-498. docs/architecture/stack-architecture.md
-499. docs/architecture/network-design.md
-500. docs/architecture/security-design.md
-501. docs/architecture/testing-strategy.md
-502. docs/deployment/terraform-stacks-guide.md
-503. docs/deployment/native-testing-guide.md
-504. docs/deployment/ci-cd-pipeline.md
-505. docs/deployment/troubleshooting.md
-506. docs/operations/stack-management.md
-507. docs/operations/monitoring.md
-508. docs/operations/backup-restore.md
-509. docs/operations/disaster-recovery.md
-510. docs/operations/upgrades.md
-511. docs/security/zero-trust-implementation.md
-512. docs/security/compliance-framework.md
-513. docs/security/security-testing.md
-514. docs/security/incident-response.md
-515. docs/testing/native-testing-patterns.md
-516. docs/testing/test-organization.md
-517. docs/testing/integration-testing.md
-518. docs/testing/security-testing.md
-519. docs/development/contributing.md
-520. docs/development/stack-development.md
-521. docs/development/module-development.md
-522. docs/development/testing-development.md
+460. manifests/rbac/cluster-roles/developer-role.yaml
+461. manifests/rbac/cluster-roles/readonly-role.yaml
+462. manifests/rbac/cluster-roles/admin-role.yaml
+463. manifests/rbac/cluster-roles/security-role.yaml
+464. manifests/rbac/role-bindings/developer-binding.yaml
+465. manifests/rbac/role-bindings/readonly-binding.yaml
+466. manifests/rbac/role-bindings/admin-binding.yaml
+467. manifests/rbac/role-bindings/security-binding.yaml
+468. manifests/rbac/service-accounts/application-sa.yaml
+469. manifests/rbac/service-accounts/monitoring-sa.yaml
+470. manifests/rbac/service-accounts/security-sa.yaml
 ```
 
-## Phase 21: Monitoring & Observability Tools (Days 81-83)
+### 14.7 Security Manifests
 
-### 21.1 Custom Metrics
-
 ```markdown
-523. monitoring/custom-metrics/prometheus-adapter.yaml
-524. monitoring/custom-metrics/custom-metrics-api.yaml
-525. monitoring/custom-metrics/hpa-custom-metrics.yaml
+471. manifests/security/gatekeeper/system/config.yaml
+472. manifests/security/gatekeeper/system/namespace.yaml
+473. manifests/security/gatekeeper/system/mutation-config.yaml
+474. manifests/security/gatekeeper/constraints/required-labels.yaml
+475. manifests/security/gatekeeper/constraints/allowed-repos.yaml
+476. manifests/security/gatekeeper/constraints/resource-limits.yaml
+477. manifests/security/gatekeeper/constraints/security-context.yaml
+478. manifests/security/gatekeeper/constraints/pod-security.yaml
+479. manifests/security/gatekeeper/templates/k8srequiredlabels.yaml
+480. manifests/security/gatekeeper/templates/k8sallowedrepos.yaml
+481. manifests/security/gatekeeper/templates/k8srequiredresources.yaml
+482. manifests/security/gatekeeper/templates/k8ssecuritycontext.yaml
+483. manifests/security/gatekeeper/templates/k8spodsecurity.yaml
 ```
 
-### 21.2 Dashboards
+### 14.8 Falco Configuration
 
 ```markdown
-526. monitoring/dashboards/terraform/terraform-state.json
-527. monitoring/dashboards/terraform/infrastructure-costs.json
-528. monitoring/dashboards/security/falco-security.json
-529. monitoring/dashboards/security/gatekeeper-violations.json
-530. monitoring/dashboards/security/network-policies.json
-531. monitoring/dashboards/security/compliance-overview.json
-532. monitoring/dashboards/application/nginx-ingress.json
-533. monitoring/dashboards/application/cert-manager.json
-534. monitoring/dashboards/application/external-dns.json
-535. monitoring/dashboards/application/cluster-autoscaler.json
+484. manifests/security/falco/falco-config.yaml
+485. manifests/security/falco/falco-rules.yaml
+486. manifests/security/falco/falco-sidekick.yaml
+487. manifests/security/falco/custom-rules.yaml
 ```
 
-### 21.3 Alerts
+### 14.9 Network Security Policies
 
 ```markdown
-536. monitoring/alerts/infrastructure/cluster-health.yaml
-537. monitoring/alerts/infrastructure/node-health.yaml
-538. monitoring/alerts/infrastructure/etcd-health.yaml
-539. monitoring/alerts/infrastructure/api-server.yaml
-540. monitoring/alerts/security/policy-violations.yaml
-541. monitoring/alerts/security/suspicious-activity.yaml
-542. monitoring/alerts/security/certificate-expiry.yaml
-543. monitoring/alerts/security/rbac-violations.yaml
-544. monitoring/alerts/application/ingress-errors.yaml
-545. monitoring/alerts/application/dns-failures.yaml
-546. monitoring/alerts/application/scaling-issues.yaml
-547. monitoring/alerts/application/resource-exhaustion.yaml
+488. manifests/security/network-security/cilium-policies/l3-l4-policy.yaml
+489. manifests/security/network-security/cilium-policies/l7-policy.yaml
+490. manifests/security/network-security/cilium-policies/egress-policy.yaml
+491. manifests/security/network-security/cilium-policies/cluster-mesh-policy.yaml
+492. manifests/security/network-security/calico-policies/global-network-policy.yaml
+493. manifests/security/network-security/calico-policies/namespace-policy.yaml
+494. manifests/security/network-security/calico-policies/pod-policy.yaml
+495. manifests/security/network-security/calico-policies/host-endpoint-policy.yaml
 ```
 
-### 21.4 Exporters
+### 14.10 Autoscaling Manifests
 
 ```markdown
-548. monitoring/exporters/blackbox-exporter/config.yaml
-549. monitoring/exporters/blackbox-exporter/probes.yaml
-550. monitoring/exporters/node-exporter/config.yaml
-551. monitoring/exporters/custom-exporters/terraform-exporter.py
-552. monitoring/exporters/custom-exporters/compliance-exporter.go
-553. monitoring/exporters/custom-exporters/cost-exporter.py
+496. manifests/autoscaling/hpa/nginx-hpa.yaml
+497. manifests/autoscaling/hpa/app-hpa.yaml
+498. manifests/autoscaling/hpa/custom-metrics-hpa.yaml
+499. manifests/autoscaling/hpa/behavior-hpa.yaml
+500. manifests/autoscaling/vpa/vpa-recommender.yaml
+501. manifests/autoscaling/vpa/vpa-updater.yaml
+502. manifests/autoscaling/vpa/vpa-admission-controller.yaml
+503. manifests/autoscaling/vpa/app-vpa.yaml
+504. manifests/autoscaling/cluster-autoscaler/cluster-autoscaler-deployment.yaml
+505. manifests/autoscaling/cluster-autoscaler/cluster-autoscaler-configmap.yaml
+506. manifests/autoscaling/cluster-autoscaler/priority-expander.yaml
+507. manifests/autoscaling/karpenter/nodepool.yaml
+508. manifests/autoscaling/karpenter/nodeclass.yaml
+509. manifests/autoscaling/karpenter/disruption.yaml
 ```
-
-## Phase 22: Backup & Disaster Recovery (Days 84-86)
 
-### 22.1 Backup Scripts
+### 14.11 Monitoring Manifests
 
 ```markdown
-554. backup/scripts/backup-etcd.sh
-555. backup/scripts/backup-state.sh
-556. backup/scripts/backup-secrets.sh
-557. backup/scripts/restore-cluster.sh
+510. manifests/monitoring/prometheus/prometheus-config.yaml
+511. manifests/monitoring/prometheus/alert-rules/cluster-rules.yaml
+512. manifests/monitoring/prometheus/alert-rules/node-rules.yaml
+513. manifests/monitoring/prometheus/alert-rules/pod-rules.yaml
+514. manifests/monitoring/prometheus/alert-rules/application-rules.yaml
+515. manifests/monitoring/prometheus/service-monitors/kubernetes-sm.yaml
+516. manifests/monitoring/prometheus/service-monitors/nginx-sm.yaml
+517. manifests/monitoring/prometheus/service-monitors/application-sm.yaml
+518. manifests/monitoring/prometheus/recording-rules.yaml
+519. manifests/monitoring/grafana/grafana-config.yaml
+520. manifests/monitoring/grafana/dashboards/cluster-overview.json
+521. manifests/monitoring/grafana/dashboards/node-metrics.json
+522. manifests/monitoring/grafana/dashboards/pod-metrics.json
+523. manifests/monitoring/grafana/dashboards/ingress-metrics.json
+524. manifests/monitoring/grafana/dashboards/security-metrics.json
+525. manifests/monitoring/grafana/datasources.yaml
+526. manifests/monitoring/grafana/notification-channels.yaml
+527. manifests/monitoring/alertmanager/alertmanager-config.yaml
+528. manifests/monitoring/alertmanager/notification-templates/slack.tmpl
+529. manifests/monitoring/alertmanager/notification-templates/email.tmpl
+530. manifests/monitoring/alertmanager/notification-templates/pagerduty.tmpl
+531. manifests/monitoring/alertmanager/silence-rules.yaml
 ```
 
-### 22.2 Backup Policies
+### 14.12 Ingress Manifests
 
 ```markdown
-558. backup/policies/velero-backup-policy.yaml
-559. backup/policies/retention-policy.yaml
-560. backup/policies/schedule-policy.yaml
+532. manifests/ingress/tls-certificates/cluster-issuer-prod.yaml
+533. manifests/ingress/tls-certificates/cluster-issuer-staging.yaml
+534. manifests/ingress/tls-certificates/wildcard-certificate.yaml
+535. manifests/ingress/tls-certificates/certificate-templates.yaml
+536. manifests/ingress/nginx/nginx-configmap.yaml
+537. manifests/ingress/nginx/nginx-ingress-class.yaml
+538. manifests/ingress/nginx/default-ssl-certificate.yaml
+539. manifests/ingress/nginx/rate-limiting.yaml
+540. manifests/ingress/nginx/modsecurity.yaml
+541. manifests/ingress/alb/ingress-class.yaml
+542. manifests/ingress/alb/target-group-binding.yaml
+543. manifests/ingress/alb/alb-annotations.yaml
+544. manifests/ingress/alb/waf-association.yaml
+545. manifests/ingress/cilium/gateway-api.yaml
+546. manifests/ingress/cilium/httproute.yaml
+547. manifests/ingress/cilium/l7-policy.yaml
+548. manifests/ingress/cilium/service-mesh.yaml
 ```
 
-### 22.3 Backup Storage
-
-```markdown
-561. backup/storage/s3-backup-bucket.tf
-562. backup/storage/backup-encryption.tf
-563. backup/storage/cross-region-replication.tf
-```
+## Phase 15: Policy & Compliance (Days 65-67)
 
-### 22.4 Backup Manifests
+### 15.1 Terraform Policies
 
 ```markdown
-564. backup/manifests/velero/velero-install.yaml
-565. backup/manifests/velero/backup-storage-location.yaml
-566. backup/manifests/velero/volume-snapshot-location.yaml
-567. backup/manifests/velero/backup-schedules.yaml
-568. backup/manifests/external-snapshotter/csi-snapshotter.yaml
-569. backup/manifests/external-snapshotter/snapshot-controller.yaml
-570. backup/manifests/external-snapshotter/volume-snapshot-class.yaml
+549. policies/terraform/common-policies.tf
+550. policies/terraform/security-policies.tf
+551. policies/terraform/cost-policies.tf
+552. policies/terraform/compliance-policies.tf
 ```
 
-### 22.5 Disaster Recovery
+### 15.2 OPA Policies
 
 ```markdown
-571. disaster-recovery/runbooks/cluster-failure.md
-572. disaster-recovery/runbooks/etcd-corruption.md
-573. disaster-recovery/runbooks/node-failure.md
-574. disaster-recovery/runbooks/network-partition.md
-575. disaster-recovery/runbooks/security-breach.md
-576. disaster-recovery/automation/failover-scripts/cluster-failover.sh
-577. disaster-recovery/automation/failover-scripts/dns-failover.sh
-578. disaster-recovery/automation/failover-scripts/storage-failover.sh
-579. disaster-recovery/automation/recovery-scripts/cluster-recovery.sh
-580. disaster-recovery/automation/recovery-scripts/data-recovery.sh
-581. disaster-recovery/automation/recovery-scripts/service-recovery.sh
-582. disaster-recovery/automation/validation-scripts/health-check.sh
-583. disaster-recovery/automation/validation-scripts/data-integrity.sh
-584. disaster-recovery/automation/validation-scripts/service-validation.sh
+553. policies/opa/security.rego
+554. policies/opa/networking.rego
+555. policies/opa/resources.rego
+556. policies/opa/compliance.rego
+557. policies/opa/admission.rego
 ```
 
-### 22.6 Chaos Engineering
+### 15.3 Sentinel Policies
 
 ```markdown
-585. disaster-recovery/testing/chaos-engineering/litmus-experiments/pod-delete.yaml
-586. disaster-recovery/testing/chaos-engineering/litmus-experiments/node-drain.yaml
-587. disaster-recovery/testing/chaos-engineering/litmus-experiments/network-loss.yaml
-588. disaster-recovery/testing/chaos-engineering/litmus-experiments/cpu-stress.yaml
-589. disaster-recovery/testing/chaos-engineering/chaos-mesh/network-chaos.yaml
-590. disaster-recovery/testing/chaos-engineering/chaos-mesh/pod-chaos.yaml
-591. disaster-recovery/testing/chaos-engineering/chaos-mesh/io-chaos.yaml
-592. disaster-recovery/testing/chaos-engineering/chaos-mesh/stress-chaos.yaml
+558. policies/sentinel/cost-control.sentinel
+559. policies/sentinel/security-compliance.sentinel
+560. policies/sentinel/resource-governance.sentinel
+561. policies/sentinel/policy-sets.hcl
 ```
 
-### 22.7 DR Exercises
+### 15.4 Checkov Configuration
 
 ```markdown
-593. disaster-recovery/testing/dr-exercises/quarterly-dr-test.md
-594. disaster-recovery/testing/dr-exercises/monthly-backup-test.md
-595. disaster-recovery/testing/dr-exercises/weekly-health-check.md
-596. disaster-recovery/testing/dr-exercises/daily-monitoring-check.md
-597. disaster-recovery/compliance/rpo-rto-requirements.md
-598. disaster-recovery/compliance/backup-compliance.md
-599. disaster-recovery/compliance/security-compliance.md
-600. disaster-recovery/compliance/audit-requirements.md
+562. policies/checkov/.checkov.yaml
+563. policies/checkov/custom_checks/eks_encryption.py
+564. policies/checkov/custom_checks/vpc_flow_logs.py
+565. policies/checkov/custom_checks/iam_least_privilege.py
+566. policies/checkov/custom_checks/security_groups.py
+567. policies/checkov/suppressions/known_issues.yaml
+568. policies/checkov/suppressions/false_positives.yaml
 ```
 
-## Phase 23: Cost Optimization & Management (Days 87-89)
+## Phase 16: Scripts & Automation (Days 68-70)
 
-### 23.1 Cost Analysis Tools
+### 16.1 Terraform Scripts
 
 ```markdown
-601. cost-optimization/analysis/cost-analysis.py
-602. cost-optimization/analysis/resource-utilization.py
-603. cost-optimization/analysis/rightsizing-recommendations.py
-604. cost-optimization/analysis/waste-detection.py
+569. scripts/terraform/setup.sh
+570. scripts/terraform/plan-all.sh
+571. scripts/terraform/apply-all.sh
+572. scripts/terraform/destroy-all.sh
+573. scripts/terraform/validate.sh
+574. scripts/terraform/format.sh
 ```
 
-### 23.2 Cost Policies
+### 16.2 Testing Scripts
 
 ```markdown
-605. cost-optimization/policies/cost-allocation-tags.yaml
-606. cost-optimization/policies/budget-alerts.yaml
-607. cost-optimization/policies/resource-limits.yaml
-608. cost-optimization/policies/cleanup-policies.yaml
+575. scripts/testing/run-unit-tests.sh
+576. scripts/testing/run-integration-tests.sh
+577. scripts/testing/run-e2e-tests.sh
+578. scripts/testing/test-cleanup.sh
+579. scripts/testing/parallel-test.sh
 ```
 
-### 23.3 Cost Automation
+### 16.3 Kubernetes Scripts
 
 ```markdown
-609. cost-optimization/automation/spot-instance-automation/spot-fleet-config.yaml
-610. cost-optimization/automation/spot-instance-automation/interruption-handler.yaml
-611. cost-optimization/automation/spot-instance-automation/savings-tracker.py
-612. cost-optimization/automation/scheduled-scaling/business-hours-scaling.yaml
-613. cost-optimization/automation/scheduled-scaling/weekend-downscaling.yaml
-614. cost-optimization/automation/scheduled-scaling/holiday-schedules.yaml
-615. cost-optimization/automation/resource-cleanup/unused-resources.py
-616. cost-optimization/automation/resource-cleanup/orphaned-volumes.py
-617. cost-optimization/automation/resource-cleanup/stale-snapshots.py
+580. scripts/kubernetes/kubectl-config.sh
+581. scripts/kubernetes/helm-install.sh
+582. scripts/kubernetes/security-scan.sh
+583. scripts/kubernetes/backup.sh
+584. scripts/kubernetes/upgrade-cluster.sh
 ```
 
-### 23.4 Cost Reporting
+### 16.4 CI/CD Scripts
 
 ```markdown
-618. cost-optimization/reporting/daily-cost-report.py
-619. cost-optimization/reporting/monthly-optimization-report.py
-620. cost-optimization/reporting/quarterly-trend-analysis.py
-621. cost-optimization/reporting/dashboards/cost-overview.json
-622. cost-optimization/reporting/dashboards/resource-utilization.json
-623. cost-optimization/reporting/dashboards/savings-tracker.json
+585. scripts/ci-cd/docker-build.sh
+586. scripts/ci-cd/security-scan.sh
+587. scripts/ci-cd/compliance-check.sh
+588. scripts/ci-cd/notification.sh
 ```
 
-## Phase 24: Compliance Framework (Days 90-92)
+### 16.5 Utility Scripts
 
-### 24.1 Compliance Frameworks
-
 ```markdown
-624. compliance/frameworks/cis-benchmarks/kubernetes-cis.yaml
-625. compliance/frameworks/cis-benchmarks/aws-cis.yaml
-626. compliance/frameworks/cis-benchmarks/assessment-tools.sh
-627. compliance/frameworks/nist/nist-800-53.yaml
-628. compliance/frameworks/nist/control-mappings.yaml
-629. compliance/frameworks/nist/assessment-procedures.md
-630. compliance/frameworks/pci-dss/pci-requirements.yaml
-631. compliance/frameworks/pci-dss/network-segmentation.yaml
-632. compliance/frameworks/pci-dss/audit-procedures.md
-633. compliance/frameworks/sox/sox-controls.yaml
-634. compliance/frameworks/sox/change-management.yaml
-635. compliance/frameworks/sox/audit-trail.md
-636. compliance/frameworks/gdpr/data-protection.yaml
-637. compliance/frameworks/gdpr/privacy-policies.yaml
-638. compliance/frameworks/gdpr/data-retention.md
+589. scripts/utilities/generate-tfvars.sh
+590. scripts/utilities/cost-estimation.sh
+591. scripts/utilities/resource-cleanup.sh
+592. scripts/utilities/backup-state.sh
 ```
-
-### 24.2 Compliance Scanning
 
-```markdown
-639. compliance/scanning/vulnerability-scanning/trivy-config.yaml
-640. compliance/scanning/vulnerability-scanning/clair-config.yaml
-641. compliance/scanning/vulnerability-scanning/snyk-config.yaml
-642. compliance/scanning/vulnerability-scanning/scanning-policies.yaml
-643. compliance/scanning/security-scanning/kube-bench.yaml
-644. compliance/scanning/security-scanning/kube-hunter.yaml
-645. compliance/scanning/security-scanning/polaris-config.yaml
-646. compliance/scanning/security-scanning/falco-rules.yaml
-```
+## Phase 17: Advanced GitHub Actions (Days 71-73)
 
-### 24.3 Compliance Reporting
+### 17.1 Core Workflows
 
 ```markdown
-647. compliance/reporting/compliance-dashboard.json
-648. compliance/reporting/vulnerability-report.py
-649. compliance/reporting/audit-report-generator.py
-650. compliance/reporting/risk-assessment.py
+593. .github/workflows/terraform-plan.yml
+594. .github/workflows/terraform-apply.yml
+595. .github/workflows/terraform-test-e2e.yml
+596. .github/workflows/security-scan.yml
+597. .github/workflows/compliance-check.yml
+598. .github/workflows/cost-estimation.yml
+599. .github/workflows/destroy.yml
 ```
 
-### 24.4 Compliance Remediation
+### 17.2 Additional GitHub Actions
 
 ```markdown
-651. compliance/remediation/automated-fixes/security-patches.sh
-652. compliance/remediation/automated-fixes/config-drift-fix.sh
-653. compliance/remediation/automated-fixes/policy-enforcement.sh
-654. compliance/remediation/manual-procedures/critical-vulnerabilities.md
-655. compliance/remediation/manual-procedures/compliance-violations.md
-656. compliance/remediation/manual-procedures/security-incidents.md
-657. compliance/remediation/validation/fix-validation.sh
-658. compliance/remediation/validation/compliance-check.sh
-659. compliance/remediation/validation/security-verification.sh
+600. .github/actions/aws-assume-role/action.yml
+601. .github/actions/aws-assume-role/assume-role.sh
+602. .github/actions/k8s-setup/action.yml
+603. .github/actions/k8s-setup/kubectl-setup.sh
+604. .github/actions/security-scan/action.yml
+605. .github/actions/security-scan/scan.sh
 ```
-
-## Phase 25: Secrets Management (Days 93-95)
 
-### 25.1 External Secrets
+### 17.3 GitHub Templates
 
 ```markdown
-660. secrets-management/external-secrets/secret-stores/aws-secrets-manager.yaml
-661. secrets-management/external-secrets/secret-stores/aws-parameter-store.yaml
-662. secrets-management/external-secrets/secret-stores/hashicorp-vault.yaml
-663. secrets-management/external-secrets/secret-stores/azure-key-vault.yaml
-664. secrets-management/external-secrets/external-secrets/database-secrets.yaml
-665. secrets-management/external-secrets/external-secrets/api-keys.yaml
-666. secrets-management/external-secrets/external-secrets/certificates.yaml
-667. secrets-management/external-secrets/external-secrets/oauth-tokens.yaml
-668. secrets-management/external-secrets/cluster-secret-store.yaml
+606. .github/ISSUE_TEMPLATE/bug_report.md
+607. .github/ISSUE_TEMPLATE/feature_request.md
+608. .github/ISSUE_TEMPLATE/security_issue.md
+609. .github/ISSUE_TEMPLATE/infrastructure_change.md
+610. .github/PULL_REQUEST_TEMPLATE.md
 ```
 
-### 25.2 Sealed Secrets
+## Phase 18: Tools & Development Environment (Days 74-76)
 
-```markdown
-669. secrets-management/sealed-secrets/sealed-secrets-controller.yaml
-670. secrets-management/sealed-secrets/sealed-secrets/dev-secrets.yaml
-671. secrets-management/sealed-secrets/sealed-secrets/staging-secrets.yaml
-672. secrets-management/sealed-secrets/sealed-secrets/prod-secrets.yaml
-673. secrets-management/sealed-secrets/bitnami-labs-sealed-secrets.key
-```
+### 18.1 Docker Tools
 
-### 25.3 HashiCorp Vault
-
 ```markdown
-674. secrets-management/vault/vault-operator/vault-operator.yaml
-675. secrets-management/vault/vault-operator/vault-cluster.yaml
-676. secrets-management/vault/vault-operator/vault-policies.hcl
-677. secrets-management/vault/auth-methods/kubernetes-auth.hcl
-678. secrets-management/vault/auth-methods/aws-auth.hcl
-679. secrets-management/vault/auth-methods/jwt-auth.hcl
-680. secrets-management/vault/secret-engines/kv-secrets.hcl
-681. secrets-management/vault/secret-engines/pki-engine.hcl
-682. secrets-management/vault/secret-engines/database-engine.hcl
-683. secrets-management/vault/secret-engines/aws-engine.hcl
-684. secrets-management/vault/policies/app-policy.hcl
-685. secrets-management/vault/policies/admin-policy.hcl
-686. secrets-management/vault/policies/readonly-policy.hcl
+611. tools/docker/terraform/Dockerfile
+612. tools/docker/terraform/entrypoint.sh
+613. tools/docker/terraform/entrypoint.sh
+614. tools/docker/terraform/.dockerignore
+615. tools/docker/terraform-testing/Dockerfile
+616. tools/docker/terraform-testing/entrypoint.sh
+617. tools/docker/terraform-testing/.dockerignore
+618. tools/docker/dev-tools/Dockerfile
+619. tools/docker/dev-tools/tools-install.sh
+620. tools/docker/dev-tools/.dockerignore
 ```
 
-### 25.4 Secrets Security
+### 18.2 Kustomize Tools
 
 ```markdown
-687. secrets-management/security/secret-scanning/gitleaks-config.toml
-688. secrets-management/security/secret-scanning/truffleHog-config.yaml
-689. secrets-management/security/secret-scanning/detect-secrets.yaml
-690. secrets-management/security/rotation/automatic-rotation.yaml
-691. secrets-management/security/rotation/rotation-schedule.cron
-692. secrets-management/security/rotation/rotation-validation.sh
-693. secrets-management/security/encryption/encryption-at-rest.yaml
-694. secrets-management/security/encryption/encryption-in-transit.yaml
-695. secrets-management/security/encryption/key-management.yaml
+621. tools/kustomize/base/kustomization.yaml
+622. tools/kustomize/base/common-labels.yaml
+623. tools/kustomize/base/common-annotations.yaml
+624. tools/kustomize/overlays/test/kustomization.yaml
+625. tools/kustomize/overlays/test/patches/replica-patch.yaml
+626. tools/kustomize/overlays/test/patches/resource-patch.yaml
+627. tools/kustomize/overlays/test/patches/env-patch.yaml
+628. tools/kustomize/overlays/test/configmaps/app-config.yaml
+629. tools/kustomize/overlays/dev/kustomization.yaml
+630. tools/kustomize/overlays/dev/patches/replica-patch.yaml
+631. tools/kustomize/overlays/dev/patches/resource-patch.yaml
+632. tools/kustomize/overlays/dev/patches/env-patch.yaml
+633. tools/kustomize/overlays/dev/configmaps/app-config.yaml
+634. tools/kustomize/overlays/pre-prod/kustomization.yaml
+635. tools/kustomize/overlays/pre-prod/patches/replica-patch.yaml
+636. tools/kustomize/overlays/pre-prod/patches/resource-patch.yaml
+637. tools/kustomize/overlays/pre-prod/patches/env-patch.yaml
+638. tools/kustomize/overlays/pre-prod/configmaps/app-config.yaml
+639. tools/kustomize/overlays/prod/kustomization.yaml
+640. tools/kustomize/overlays/prod/patches/replica-patch.yaml
+641. tools/kustomize/overlays/prod/patches/resource-patch.yaml
+642. tools/kustomize/overlays/prod/patches/env-patch.yaml
+643. tools/kustomize/overlays/prod/configmaps/app-config.yaml
+644. tools/kustomize/components/monitoring/kustomization.yaml
+645. tools/kustomize/components/monitoring/prometheus-config.yaml
+646. tools/kustomize/components/security/kustomization.yaml
+647. tools/kustomize/components/security/network-policies.yaml
+648. tools/kustomize/components/security/pod-security.yaml
+649. tools/kustomize/components/ingress/kustomization.yaml
+650. tools/kustomize/components/ingress/nginx-config.yaml
+651. tools/kustomize/components/ingress/tls-config.yaml
 ```
 
-## Phase 26: Final Integration & Polish (Days 96-100)
+### 18.3 ArgoCD Configuration
 
-### 26.1 AWS Configuration Files
-
 ```markdown
-696. configs/aws/assume-role-policy.json
-697. configs/aws/cloudformation-templates/bootstrap-stack.yaml
-698. configs/aws/cloudformation-templates/logging-stack.yaml
-699. configs/aws/cloudformation-templates/security-stack.yaml
-700. configs/aws/service-control-policies/security-scp.json
-701. configs/aws/service-control-policies/cost-control-scp.json
-702. configs/aws/service-control-policies/compliance-scp.json
+652. tools/argocd/bootstrap/argocd-install.yaml
+653. tools/argocd/bootstrap/app-of-apps.yaml
+654. tools/argocd/bootstrap/root-app.yaml
+655. tools/argocd/applications/infrastructure/ingress-controller.yaml
+656. tools/argocd/applications/infrastructure/cert-manager.yaml
+657. tools/argocd/applications/infrastructure/monitoring.yaml
+658. tools/argocd/applications/infrastructure/security.yaml
+659. tools/argocd/applications/infrastructure/autoscaling.yaml
+660. tools/argocd/applications/platform/logging.yaml
+661. tools/argocd/applications/platform/metrics.yaml
+662. tools/argocd/applications/platform/tracing.yaml
+663. tools/argocd/applications/platform/service-mesh.yaml
+664. tools/argocd/applications/workloads/test-apps.yaml
+665. tools/argocd/applications/workloads/dev-apps.yaml
+666. tools/argocd/applications/workloads/pre-prod-apps.yaml
+667. tools/argocd/applications/workloads/prod-apps.yaml
+668. tools/argocd/projects/infrastructure.yaml
+669. tools/argocd/projects/platform.yaml
+670. tools/argocd/projects/applications.yaml
+671. tools/argocd/projects/security.yaml
+672. tools/argocd/repositories/helm-repos.yaml
+673. tools/argocd/repositories/git-repos.yaml
+674. tools/argocd/repositories/oci-repos.yaml
+675. tools/argocd/config/argocd-cm.yaml
+676. tools/argocd/config/argocd-rbac-cm.yaml
+677. tools/argocd/config/argocd-server-config.yaml
+678. tools/argocd/config/notifications-cm.yaml
 ```
 
-### 26.2 Kubernetes Configuration
+### 18.4 Flux Configuration
 
 ```markdown
-703. configs/kubernetes/kubeconfig-template.yaml
-704. configs/kubernetes/cluster-config.yaml
-705. configs/kubernetes/admission-config.yaml
+679. tools/flux/clusters/test/flux-system/gotk-components.yaml
+680. tools/flux/clusters/test/flux-system/gotk-sync.yaml
+681. tools/flux/clusters/test/flux-system/kustomization.yaml
+682. tools/flux/clusters/test/infrastructure/controllers/cert-manager.yaml
+683. tools/flux/clusters/test/infrastructure/controllers/ingress-nginx.yaml
+684. tools/flux/clusters/test/infrastructure/controllers/prometheus.yaml
+685. tools/flux/clusters/test/infrastructure/controllers/external-dns.yaml
+686. tools/flux/clusters/test/infrastructure/configs/cluster-issuers.yaml
+687. tools/flux/clusters/test/infrastructure/configs/ingress-config.yaml
+688. tools/flux/clusters/test/infrastructure/configs/monitoring-config.yaml
+689. tools/flux/clusters/test/infrastructure/sources/helm-repositories.yaml
+690. tools/flux/clusters/test/infrastructure/sources/git-repositories.yaml
+691. tools/flux/clusters/test/infrastructure/sources/bucket-sources.yaml
+692. tools/flux/clusters/test/apps/base/kustomization.yaml
+693. tools/flux/clusters/test/apps/base/namespace.yaml
+694. tools/flux/clusters/test/apps/base/common-resources.yaml
+695. tools/flux/clusters/test/apps/test/kustomization.yaml
+696. tools/flux/clusters/test/apps/test/app-releases.yaml
 ```
-
-### 26.3 Monitoring Configuration
+
+### 18.5 Crossplane Configuration
 
 ```markdown
-706. configs/monitoring/prometheus-rules/kubernetes.yaml
-707. configs/monitoring/prometheus-rules/node-exporter.yaml
-708. configs/monitoring/prometheus-rules/kube-state-metrics.yaml
-709. configs/monitoring/prometheus-rules/custom-rules.yaml
-710. configs/monitoring/grafana-dashboards/kubernetes-cluster.json
-711. configs/monitoring/grafana-dashboards/kubernetes-nodes.json
-712. configs/monitoring/grafana-dashboards/kubernetes-pods.json
-713. configs/monitoring/grafana-dashboards/application-overview.json
-714. configs/monitoring/alertmanager-config/routing-rules.yaml
-715. configs/monitoring/alertmanager-config/inhibit-rules.yaml
-716. configs/monitoring/alertmanager-config/templates.yaml
+697. tools/crossplane/providers/aws-provider.yaml
+698. tools/crossplane/providers/kubernetes-provider.yaml
+699. tools/crossplane/providers/helm-provider.yaml
+700. tools/crossplane/compositions/vpc-composition.yaml
+701. tools/crossplane/compositions/eks-composition.yaml
+702. tools/crossplane/compositions/rds-composition.yaml
+703. tools/crossplane/compositions/s3-composition.yaml
+704. tools/crossplane/composite-resource-definitions/xvpc.yaml
+705. tools/crossplane/composite-resource-definitions/xeks.yaml
+706. tools/crossplane/composite-resource-definitions/xrds.yaml
+707. tools/crossplane/composite-resource-definitions/xs3.yaml
+708. tools/crossplane/claims/test/vpc-claim.yaml
+709. tools/crossplane/claims/test/eks-claim.yaml
+710. tools/crossplane/claims/test/rds-claim.yaml
+711. tools/crossplane/claims/dev/vpc-claim.yaml
+712. tools/crossplane/claims/dev/eks-claim.yaml
+713. tools/crossplane/claims/dev/rds-claim.yaml
+714. tools/crossplane/claims/pre-prod/vpc-claim.yaml
+715. tools/crossplane/claims/pre-prod/eks-claim.yaml
+716. tools/crossplane/claims/pre-prod/rds-claim.yaml
+717. tools/crossplane/claims/prod/vpc-claim.yaml
+718. tools/crossplane/claims/prod/eks-claim.yaml
+719. tools/crossplane/claims/prod/rds-claim.yaml
+```
+
+### 18.6 Development Environment
+
+```markdown
+720. .devcontainer/devcontainer.json
+721. .devcontainer/Dockerfile
+722. .devcontainer/docker-compose.yml
+723. .devcontainer/post-create.sh
+724. .vscode/settings.json
+725. .vscode/extensions.json
+726. .vscode/launch.json
+727. .vscode/tasks.json
+728. .vscode/snippets/terraform.json
+729. .vscode/snippets/hcl.json
+```
+
+## Phase 19: Examples & Documentation (Days 77-80)
+
+### 19.1 Example Deployments
+
+```markdown
+730. examples/minimal/README.md
+731. examples/minimal/stack.tfstack
+732. examples/minimal/main.tf
+733. examples/minimal/variables.tf
+734. examples/minimal/outputs.tf
+735. examples/complete/README.md
+736. examples/complete/stack.tfstack
+737. examples/complete/main.tf
+738. examples/complete/variables.tf
+739. examples/complete/outputs.tf
+740. examples/multi-region/README.md
+741. examples/multi-region/us-east-1/stack.tfstack
+742. examples/multi-region/eu-west-1/stack.tfstack
+743. examples/multi-region/ap-southeast-1/stack.tfstack
+744. examples/security-hardened/README.md
+745. examples/security-hardened/stack.tfstack
+746. examples/security-hardened/security-policies.yaml
+747. examples/security-hardened/compliance.tf
+```
+
+### 19.2 Core Documentation
+
+```markdown
+748. docs/README.md
+749. docs/architecture/overview.md
+750. docs/architecture/network-architecture.md
+751. docs/architecture/security-architecture.md
+752. docs/architecture/stacks-and-deployments.md
+753. docs/architecture/data-flow.md
+754. docs/deployment/terraform-stacks-guide.md
+755. docs/deployment/testing-guide.md
+756. docs/deployment/ci-cd-setup.md
+757. docs/deployment/troubleshooting.md
+758. docs/operations/monitoring.md
+759. docs/operations/backup-restore.md
+760. docs/operations/disaster-recovery.md
+761. docs/operations/scaling.md
+762. docs/operations/upgrades.md
+763. docs/security/security-guidelines.md
+764. docs/security/compliance.md
+765. docs/security/zero-trust.md
+766. docs/security/iam-strategy.md
+767. docs/security/incident-response.md
+768. docs/development/contributing.md
+769. docs/development/testing-strategy.md
+770. docs/development/code-standards.md
+771. docs/development/review-process.md
+772. docs/runbooks/cluster-upgrade.md
+773. docs/runbooks/node-replacement.md
+774. docs/runbooks/certificate-renewal.md
+775. docs/runbooks/backup-restore.md
+776. docs/runbooks/incident-response.md
+```
+
+## Phase 20: Advanced Features (Days 81-85)
+
+### 20.1 Helmfile Configuration
+
+```markdown
+777. helmfile/helmfile.yaml
+778. helmfile/helmfile.lock
+779. helmfile/environments/default.yaml
+780. helmfile/environments/test/values.yaml
+781. helmfile/environments/test/secrets.yaml
+782. helmfile/environments/dev/values.yaml
+783. helmfile/environments/dev/secrets.yaml
+784. helmfile/environments/pre-prod/values.yaml
+785. helmfile/environments/pre-prod/secrets.yaml
+786. helmfile/environments/prod/values.yaml
+787. helmfile/environments/prod/secrets.yaml
+788. helmfile/releases/ingress-nginx.yaml
+789. helmfile/releases/cert-manager.yaml
+790. helmfile/releases/cluster-autoscaler.yaml
+791. helmfile/releases/prometheus-stack.yaml
+792. helmfile/releases/grafana.yaml
+793. helmfile/releases/external-dns.yaml
+794. helmfile/releases/falco.yaml
+795. helmfile/releases/gatekeeper.yaml
+796. helmfile/releases/cilium.yaml
+797. helmfile/charts/custom-apps/Chart.yaml
+798. helmfile/charts/custom-apps/values.yaml
+799. helmfile/charts/security-baseline/Chart.yaml
+800. helmfile/charts/security-baseline/values.yaml
+801. helmfile/hooks/pre-install.sh
+802. helmfile/hooks/post-install.sh
+803. helmfile/hooks/pre-upgrade.sh
+804. helmfile/hooks/post-upgrade.sh
+```
+
+### 20.2 Monitoring Configuration
+
+```markdown
+805. monitoring/custom-metrics/prometheus-adapter.yaml
+806. monitoring/custom-metrics/custom-metrics-api.yaml
+807. monitoring/custom-metrics/hpa-custom-metrics.yaml
+808. monitoring/dashboards/terraform/terraform-state.json
+809. monitoring/dashboards/terraform/terraform-runs.json
+810. monitoring/dashboards/terraform/infrastructure-costs.json
+811. monitoring/dashboards/security/falco-security.json
+812. monitoring/dashboards/security/gatekeeper-violations.json
+813. monitoring/dashboards/security/network-policies.json
+814. monitoring/dashboards/security/compliance-overview.json
+815. monitoring/dashboards/application/nginx-ingress.json
+816. monitoring/dashboards/application/cert-manager.json
+817. monitoring/dashboards/application/external-dns.json
+818. monitoring/dashboards/application/cluster-autoscaler.json
+819. monitoring/alerts/infrastructure/cluster-health.yaml
+820. monitoring/alerts/infrastructure/node-health.yaml
+821. monitoring/alerts/infrastructure/etcd-health.yaml
+822. monitoring/alerts/infrastructure/api-server.yaml
+823. monitoring/alerts/security/policy-violations.yaml
+824. monitoring/alerts/security/suspicious-activity.yaml
+825. monitoring/alerts/security/certificate-expiry.yaml
+826. monitoring/alerts/security/rbac-violations.yaml
+827. monitoring/alerts/application/ingress-errors.yaml
+828. monitoring/alerts/application/dns-failures.yaml
+829. monitoring/alerts/application/scaling-issues.yaml
+830. monitoring/alerts/application/resource-exhaustion.yaml
+831. monitoring/exporters/blackbox-exporter/config.yaml
+832. monitoring/exporters/blackbox-exporter/probes.yaml
+833. monitoring/exporters/node-exporter/config.yaml
+834. monitoring/exporters/custom-exporters/terraform-exporter.py
+835. monitoring/exporters/custom-exporters/compliance-exporter.go
+836. monitoring/exporters/custom-exporters/cost-exporter.py
+```
+
+### 20.3 Backup & DR
+
+```markdown
+837. backup/scripts/backup-etcd.sh
+838. backup/scripts/backup-state.sh
+839. backup/scripts/backup-secrets.sh
+840. backup/scripts/restore-cluster.sh
+841. backup/policies/velero-backup-policy.yaml
+842. backup/policies/retention-policy.yaml
+843. backup/policies/schedule-policy.yaml
+844. backup/storage/s3-backup-bucket.tf
+845. backup/storage/backup-encryption.tf
+846. backup/storage/cross-region-replication.tf
+847. backup/manifests/velero/velero-install.yaml
+848. backup/manifests/velero/backup-storage-location.yaml
+849. backup/manifests/velero/volume-snapshot-location.yaml
+850. backup/manifests/velero/backup-schedules.yaml
+851. backup/manifests/external-snapshotter/csi-snapshotter.yaml
+852. backup/manifests/external-snapshotter/snapshot-controller.yaml
+853. backup/manifests/external-snapshotter/volume-snapshot-class.yaml
+```
+
+### 20.4 Disaster Recovery
+
+```markdown
+854. disaster-recovery/runbooks/cluster-failure.md
+855. disaster-recovery/runbooks/etcd-corruption.md
+856. disaster-recovery/runbooks/node-failure.md
+857. disaster-recovery/runbooks/network-partition.md
+858. disaster-recovery/runbooks/security-breach.md
+859. disaster-recovery/automation/failover-scripts/cluster-failover.sh
+860. disaster-recovery/automation/failover-scripts/dns-failover.sh
+861. disaster-recovery/automation/failover-scripts/storage-failover.sh
+862. disaster-recovery/automation/recovery-scripts/cluster-recovery.sh
+863. disaster-recovery/automation/recovery-scripts/data-recovery.sh
+864. disaster-recovery/automation/recovery-scripts/service-recovery.sh
+865. disaster-recovery/automation/validation-scripts/health-check.sh
+866. disaster-recovery/automation/validation-scripts/data-integrity.sh
+867. disaster-recovery/automation/validation-scripts/service-validation.sh
+868. disaster-recovery/testing/chaos-engineering/litmus-experiments/pod-delete.yaml
+869. disaster-recovery/testing/chaos-engineering/litmus-experiments/node-drain.yaml
+870. disaster-recovery/testing/chaos-engineering/litmus-experiments/network-loss.yaml
+871. disaster-recovery/testing/chaos-engineering/litmus-experiments/cpu-stress.yaml
+872. disaster-recovery/testing/chaos-engineering/chaos-mesh/network-chaos.yaml
+873. disaster-recovery/testing/chaos-engineering/chaos-mesh/pod-chaos.yaml
+874. disaster-recovery/testing/chaos-engineering/chaos-mesh/io-chaos.yaml
+875. disaster-recovery/testing/chaos-engineering/chaos-mesh/stress-chaos.yaml
+876. disaster-recovery/testing/dr-exercises/quarterly-dr-test.md
+877. disaster-recovery/testing/dr-exercises/monthly-backup-test.md
+878. disaster-recovery/testing/dr-exercises/weekly-health-check.md
+879. disaster-recovery/testing/dr-exercises/daily-monitoring-check.md
+880. disaster-recovery/compliance/rpo-rto-requirements.md
+881. disaster-recovery/compliance/backup-compliance.md
+882. disaster-recovery/compliance/security-compliance.md
+883. disaster-recovery/compliance/audit-requirements.md
+```
+
+### 20.5 Cost Optimization
+
+```markdown
+884. cost-optimization/analysis/cost-analysis.py
+885. cost-optimization/analysis/resource-utilization.py
+886. cost-optimization/analysis/rightsizing-recommendations.py
+887. cost-optimization/analysis/waste-detection.py
+888. cost-optimization/policies/cost-allocation-tags.yaml
+889. cost-optimization/policies/budget-alerts.yaml
+890. cost-optimization/policies/resource-limits.yaml
+891. cost-optimization/policies/cleanup-policies.yaml
+892. cost-optimization/automation/spot-instance-automation/spot-fleet-config.yaml
+893. cost-optimization/automation/spot-instance-automation/interruption-handler.yaml
+894. cost-optimization/automation/spot-instance-automation/savings-tracker.py
+895. cost-optimization/automation/scheduled-scaling/business-hours-scaling.yaml
+896. cost-optimization/automation/scheduled-scaling/weekend-downscaling.yaml
+897. cost-optimization/automation/scheduled-scaling/holiday-schedules.yaml
+898. cost-optimization/automation/resource-cleanup/unused-resources.py
+899. cost-optimization/automation/resource-cleanup/orphaned-volumes.py
+900. cost-optimization/automation/resource-cleanup/stale-snapshots.py
+901. cost-optimization/reporting/daily-cost-report.py
+902. cost-optimization/reporting/monthly-optimization-report.py
+903. cost-optimization/reporting/quarterly-trend-analysis.py
+904. cost-optimization/reporting/dashboards/cost-overview.json
+905. cost-optimization/reporting/dashboards/resource-utilization.json
+906. cost-optimization/reporting/dashboards/savings-tracker.json
+```
+
+### 20.6 Compliance Framework
+
+```markdown
+907. compliance/frameworks/cis-benchmarks/kubernetes-cis.yaml
+908. compliance/frameworks/cis-benchmarks/aws-cis.yaml
+909. compliance/frameworks/cis-benchmarks/assessment-tools.sh
+910. compliance/frameworks/nist/nist-800-53.yaml
+911. compliance/frameworks/nist/control-mappings.yaml
+912. compliance/frameworks/nist/assessment-procedures.md
+913. compliance/frameworks/pci-dss/pci-requirements.yaml
+914. compliance/frameworks/pci-dss/network-segmentation.yaml
+915. compliance/frameworks/pci-dss/audit-procedures.md
+916. compliance/frameworks/sox/sox-controls.yaml
+917. compliance/frameworks/sox/change-management.yaml
+918. compliance/frameworks/sox/audit-trail.md
+919. compliance/frameworks/gdpr/data-protection.yaml
+920. compliance/frameworks/gdpr/privacy-policies.yaml
+921. compliance/frameworks/gdpr/data-retention.md
+922. compliance/scanning/vulnerability-scanning/trivy-config.yaml
+923. compliance/scanning/vulnerability-scanning/clair-config.yaml
+924. compliance/scanning/vulnerability-scanning/snyk-config.yaml
+925. compliance/scanning/vulnerability-scanning/scanning-policies.yaml
+926. compliance/scanning/compliance-scanning/inspec-profiles/
+927. compliance/scanning/compliance-scanning/open-scap-profiles/
+928. compliance/scanning/compliance-scanning/custom-checks/
+929. compliance/scanning/security-scanning/kube-bench.yaml
+930. compliance/scanning/security-scanning/kube-hunter.yaml
+931. compliance/scanning/security-scanning/polaris-config.yaml
+932. compliance/scanning/security-scanning/falco-rules.yaml
+933. compliance/reporting/compliance-dashboard.json
+934. compliance/reporting/vulnerability-report.py
+935. compliance/reporting/audit-report-generator.py
+936. compliance/reporting/risk-assessment.py
+937. compliance/remediation/automated-fixes/security-patches.sh
+938. compliance/remediation/automated-fixes/config-drift-fix.sh
+939. compliance/remediation/automated-fixes/policy-enforcement.sh
+940. compliance/remediation/manual-procedures/critical-vulnerabilities.md
+941. compliance/remediation/manual-procedures/compliance-violations.md
+942. compliance/remediation/manual-procedures/security-incidents.md
+943. compliance/remediation/validation/fix-validation.sh
+944. compliance/remediation/validation/compliance-check.sh
+945. compliance/remediation/validation/security-verification.sh
+```
+
+### 20.7 Secrets Management
+
+```markdown
+946. secrets-management/external-secrets/secret-stores/aws-secrets-manager.yaml
+947. secrets-management/external-secrets/secret-stores/aws-parameter-store.yaml
+948. secrets-management/external-secrets/secret-stores/hashicorp-vault.yaml
+949. secrets-management/external-secrets/secret-stores/azure-key-vault.yaml
+950. secrets-management/external-secrets/external-secrets/database-secrets.yaml
+951. secrets-management/external-secrets/external-secrets/api-keys.yaml
+952. secrets-management/external-secrets/external-secrets/certificates.yaml
+953. secrets-management/external-secrets/external-secrets/oauth-tokens.yaml
+954. secrets-management/external-secrets/cluster-secret-store.yaml
+955. secrets-management/sealed-secrets/sealed-secrets-controller.yaml
+956. secrets-management/sealed-secrets/sealed-secrets/test-secrets.yaml
+957. secrets-management/sealed-secrets/sealed-secrets/dev-secrets.yaml
+958. secrets-management/sealed-secrets/sealed-secrets/pre-prod-secrets.yaml
+959. secrets-management/sealed-secrets/sealed-secrets/prod-secrets.yaml
+960. secrets-management/sealed-secrets/bitnami-labs-sealed-secrets.key
+961. secrets-management/vault/vault-operator/vault-operator.yaml
+962. secrets-management/vault/vault-operator/vault-cluster.yaml
+963. secrets-management/vault/vault-operator/vault-policies.hcl
+964. secrets-management/vault/auth-methods/kubernetes-auth.hcl
+965. secrets-management/vault/auth-methods/aws-auth.hcl
+966. secrets-management/vault/auth-methods/jwt-auth.hcl
+967. secrets-management/vault/secret-engines/kv-secrets.hcl
+968. secrets-management/vault/secret-engines/pki-engine.hcl
+969. secrets-management/vault/secret-engines/database-engine.hcl
+970. secrets-management/vault/secret-engines/aws-engine.hcl
+971. secrets-management/vault/policies/app-policy.hcl
+972. secrets-management/vault/policies/admin-policy.hcl
+973. secrets-management/vault/policies/readonly-policy.hcl
+974. secrets-management/security/secret-scanning/gitleaks-config.toml
+975. secrets-management/security/secret-scanning/truffleHog-config.yaml
+976. secrets-management/security/secret-scanning/detect-secrets.yaml
+977. secrets-management/security/rotation/automatic-rotation.yaml
+978. secrets-management/security/rotation/rotation-schedule.cron
+979. secrets-management/security/rotation/rotation-validation.sh
+980. secrets-management/security/encryption/encryption-at-rest.yaml
+981. secrets-management/security/encryption/encryption-in-transit.yaml
+982. secrets-management/security/encryption/key-management.yaml
+```
+
+### 20.8 Final Configuration
+
+```markdown
+983. configs/terraform/backend.tf
+984. configs/terraform/provider.tf
+985. configs/terraform/variables.tf
+986. configs/terraform/remote_state.tf
+987. configs/aws/assume-role-policy.json
+988. configs/aws/cloudformation-templates/bootstrap-stack.yaml
+989. configs/aws/cloudformation-templates/logging-stack.yaml
+990. configs/aws/cloudformation-templates/security-stack.yaml
+991. configs/aws/service-control-policies/security-scp.json
+992. configs/aws/service-control-policies/cost-control-scp.json
+993. configs/aws/service-control-policies/compliance-rules.yaml
+994. .terraform-version
 ```
 
 ## TDD Workflow Summary:
 
 ### **Daily TDD Cycle (Each Development Day):**
 
-1. **Morning (9:00-11:00)**: Write failing tests (RED)
+1. **Morning (9:00-11:00)**: Write failing tests (RED) using Terraform native `.tftest` files
 2. **Midday (11:00-15:00)**: Implement minimal code to pass tests (GREEN)
 3. **Afternoon (15:00-17:00)**: Refactor and optimize (REFACTOR)
-4. **End of day (17:00-18:00)**: Run full test suite and commit
+4. **End of day (17:00-18:00)**: Run full test suite using `task test` and commit
 
 ### **Weekly Integration:**
 
-- **Monday**: Plan week's module/stack development
-- **Tuesday-Thursday**: Core TDD cycles
-- **Friday**: Integration testing, documentation, and week review
+- **Monday**: Plan week's module/stack development with Terraform Stacks
+- **Tuesday-Thursday**: Core TDD cycles using native testing
+- **Friday**: Integration testing, stack validation, and week review
 
 ### **Key Success Metrics:**
 
-- ✅ **Test Coverage**: >95% for all modules
+- ✅ **Test Coverage**: >95% for all modules using Terraform native tests
 - ✅ **Security Compliance**: Pass all CIS, NIST, PCI-DSS benchmarks
 - ✅ **Zero-Trust Validation**: All network policies enforced
-- ✅ **Performance**: Sub-second test execution
+- ✅ **Performance**: Sub-second test execution with native testing
 - ✅ **Cost Optimization**: <5% infrastructure waste
+- ✅ **Stack Validation**: All 4 stacks (test, dev, pre-prod, prod) deploy successfully
 
-### **Total Files**: 716 files
+### **Environment Deployment Order:**
 
-### **Development Timeline**: 100 days (20 weeks)
+1. **test** (Kind cluster) - Local testing environment
+2. **dev** (Rancher Desktop) - Development environment
+3. **pre-prod** (AWS EKS) - Staging environment
+4. **prod** (AWS EKS) - Production environment
 
-### **Team Velocity**: ~7 files per day average
+### **Key Technology Stack:**
 
-This comprehensive plan ensures every file from the tree structure is included and properly sequenced for TDD development using Terraform 1.12+ native features.
+- **Infrastructure**: Terraform 1.12 with native Stacks and Deployments
+- **Testing**: Terraform native testing with `.tftest` files
+- **Task Runner**: Taskfile.yml with modular `.tasks/` structure
+- **CI/CD**: GitHub Actions with Act for local testing
+- **Container Orchestration**: Kubernetes (Kind, Rancher Desktop, AWS EKS)
+- **Security**: Zero-trust architecture with comprehensive security scanning
+- **Monitoring**: Prometheus, Grafana, AlertManager
+
+### **Total Files**: 994 files
+
+### **Development Timeline**: 85 days (17 weeks)
+
+### **Team Velocity**: ~12 files per day average
+
+This comprehensive plan ensures every component is developed following TDD principles using Terraform 1.12 native capabilities, with a security-first approach and comprehensive testing strategy.

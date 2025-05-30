@@ -1,8 +1,8 @@
 # .trunk/trunk.yaml
 version: 0.1
-
 cli:
   version: 1.24.0
+repo:
 
 plugins:
   sources:
@@ -67,11 +67,14 @@ lint:
 
 actions:
   enabled:
+    - trunk-fmt-pre-commit
     - trunk-announce
     - trunk-check-pre-commit
-    - trunk-fmt-pre-commit
     - trunk-check-pre-push
     - trunk-upgrade-available
+    - trunk-single-player-auto-on-upgrade
+    - trunk-single-player-auto-upgrade
+    - trunk-cache-prune
 
 tools:
   runtimes:

@@ -1,144 +1,191 @@
-terraform-eks-zero-trust/
+terraform-eks/
 ├── README.md
 ├── .gitignore
 ├── Taskfile.yml
-├── terragrunt.hcl
-├── common.hcl
-├── region.hcl
-├── account.hcl
-├── live/
-│   ├── terragrunt.hcl
-│   ├── account.hcl
-│   ├── region.hcl
-│   └── eu-west-1/
-│       ├── terragrunt.hcl
-│       ├── region.hcl
-│       ├── _global/
-│       │   ├── terragrunt.hcl
-│       │   ├── kms/
-│       │   │   ├── terragrunt.hcl
-│       │   │   └── kms.yaml
-│       │   ├── route53/
-│       │   │   ├── terragrunt.hcl
-│       │   │   └── domains.yaml
-│       │   └── iam-global/
-│       │       ├── terragrunt.hcl
-│       │       └── cross-account-roles.yaml
-│       ├── dev/
-│       │   ├── terragrunt.hcl
-│       │   ├── env.hcl
-│       │   ├── vpc/
-│       │   │   ├── terragrunt.hcl
-│       │   │   └── vpc.yaml
-│       │   ├── iam/
-│       │   │   ├── terragrunt.hcl
-│       │   │   └── roles.yaml
-│       │   ├── security/
-│       │   │   ├── terragrunt.hcl
-│       │   │   └── security.yaml
-│       │   ├── eks-cluster/
-│       │   │   ├── terragrunt.hcl
-│       │   │   └── cluster.yaml
-│       │   ├── eks-addons/
-│       │   │   ├── terragrunt.hcl
-│       │   │   ├── core-addons/
-│       │   │   │   ├── terragrunt.hcl
-│       │   │   │   └── addons.yaml
-│       │   │   ├── ingress-controller/
-│       │   │   │   ├── terragrunt.hcl
-│       │   │   │   └── ingress.yaml
-│       │   │   ├── autoscaler/
-│       │   │   │   ├── terragrunt.hcl
-│       │   │   │   └── autoscaler.yaml
-│       │   │   ├── cert-manager/
-│       │   │   │   ├── terragrunt.hcl
-│       │   │   │   └── cert-manager.yaml
-│       │   │   ├── monitoring/
-│       │   │   │   ├── terragrunt.hcl
-│       │   │   │   └── monitoring.yaml
-│       │   │   └── security-stack/
-│       │   │       ├── terragrunt.hcl
-│       │   │       └── security-stack.yaml
-│       │   └── observability/
-│       │       ├── terragrunt.hcl
-│       │       └── observability.yaml
-│       ├── staging/
-│       │   ├── terragrunt.hcl
-│       │   ├── env.hcl
-│       │   ├── vpc/
-│       │   │   ├── terragrunt.hcl
-│       │   │   └── vpc.yaml
-│       │   ├── iam/
-│       │   │   ├── terragrunt.hcl
-│       │   │   └── roles.yaml
-│       │   ├── security/
-│       │   │   ├── terragrunt.hcl
-│       │   │   └── security.yaml
-│       │   ├── eks-cluster/
-│       │   │   ├── terragrunt.hcl
-│       │   │   └── cluster.yaml
-│       │   ├── eks-addons/
-│       │   │   ├── terragrunt.hcl
-│       │   │   ├── core-addons/
-│       │   │   │   ├── terragrunt.hcl
-│       │   │   │   └── addons.yaml
-│       │   │   ├── ingress-controller/
-│       │   │   │   ├── terragrunt.hcl
-│       │   │   │   └── ingress.yaml
-│       │   │   ├── autoscaler/
-│       │   │   │   ├── terragrunt.hcl
-│       │   │   │   └── autoscaler.yaml
-│       │   │   ├── cert-manager/
-│       │   │   │   ├── terragrunt.hcl
-│       │   │   │   └── cert-manager.yaml
-│       │   │   ├── monitoring/
-│       │   │   │   ├── terragrunt.hcl
-│       │   │   │   └── monitoring.yaml
-│       │   │   └── security-stack/
-│       │   │       ├── terragrunt.hcl
-│       │   │       └── security-stack.yaml
-│       │   └── observability/
-│       │       ├── terragrunt.hcl
-│       │       └── observability.yaml
-│       └── prod/
-│           ├── terragrunt.hcl
-│           ├── env.hcl
+├── terraform.tf                          # Global Terraform configuration
+├── providers.tf                          # Provider configurations
+├── versions.tf                           # Version constraints
+├── stacks/
+│   ├── stack.tfstack                     # Root stack configuration
+│   ├── deployments.tfdeploy              # Deployments configuration
+│   ├── shared/                           # Shared configurations
+│   │   ├── backend.tfstack               # Backend configuration
+│   │   ├── provider.tfstack              # Provider configuration
+│   │   ├── common.tfvars                 # Common variables
+│   │   └── locals.tf                     # Shared locals
+│   ├── test/                             # Test stack (kind)
+│   │   ├── stack.tfstack
+│   │   ├── deployment.tfdeploy
+│   │   ├── terraform.tfvars
+│   │   ├── locals.tf
+│   │   └── components/
+│   │       ├── networking/
+│   │       │   ├── main.tf
+│   │       │   ├── variables.tf
+│   │       │   └── outputs.tf
+│   │       ├── kind-cluster/
+│   │       │   ├── main.tf
+│   │       │   ├── variables.tf
+│   │       │   └── outputs.tf
+│   │       ├── security/
+│   │       │   ├── main.tf
+│   │       │   ├── variables.tf
+│   │       │   └── outputs.tf
+│   │       └── addons/
+│   │           ├── main.tf
+│   │           ├── variables.tf
+│   │           └── outputs.tf
+│   ├── dev/                              # Dev stack (rancher-desktop)
+│   │   ├── stack.tfstack
+│   │   ├── deployment.tfdeploy
+│   │   ├── terraform.tfvars
+│   │   ├── locals.tf
+│   │   └── components/
+│   │       ├── networking/
+│   │       │   ├── main.tf
+│   │       │   ├── variables.tf
+│   │       │   └── outputs.tf
+│   │       ├── rancher-cluster/
+│   │       │   ├── main.tf
+│   │       │   ├── variables.tf
+│   │       │   └── outputs.tf
+│   │       ├── security/
+│   │       │   ├── main.tf
+│   │       │   ├── variables.tf
+│   │       │   └── outputs.tf
+│   │       └── addons/
+│   │           ├── main.tf
+│   │           ├── variables.tf
+│   │           └── outputs.tf
+│   ├── pre-prod/                         # Pre-prod stack (AWS EKS)
+│   │   ├── stack.tfstack
+│   │   ├── deployment.tfdeploy
+│   │   ├── terraform.tfvars
+│   │   ├── locals.tf
+│   │   └── components/
+│   │       ├── global/
+│   │       │   ├── kms/
+│   │       │   │   ├── main.tf
+│   │       │   │   ├── variables.tf
+│   │       │   │   └── outputs.tf
+│   │       │   ├── route53/
+│   │       │   │   ├── main.tf
+│   │       │   │   ├── variables.tf
+│   │       │   │   └── outputs.tf
+│   │       │   └── iam-global/
+│   │       │       ├── main.tf
+│   │       │       ├── variables.tf
+│   │       │       └── outputs.tf
+│   │       ├── vpc/
+│   │       │   ├── main.tf
+│   │       │   ├── variables.tf
+│   │       │   └── outputs.tf
+│   │       ├── iam/
+│   │       │   ├── main.tf
+│   │       │   ├── variables.tf
+│   │       │   └── outputs.tf
+│   │       ├── security/
+│   │       │   ├── main.tf
+│   │       │   ├── variables.tf
+│   │       │   └── outputs.tf
+│   │       ├── eks-cluster/
+│   │       │   ├── main.tf
+│   │       │   ├── variables.tf
+│   │       │   └── outputs.tf
+│   │       ├── eks-addons/
+│   │       │   ├── core-addons/
+│   │       │   │   ├── main.tf
+│   │       │   │   ├── variables.tf
+│   │       │   │   └── outputs.tf
+│   │       │   ├── ingress-controller/
+│   │       │   │   ├── main.tf
+│   │       │   │   ├── variables.tf
+│   │       │   │   └── outputs.tf
+│   │       │   ├── autoscaler/
+│   │       │   │   ├── main.tf
+│   │       │   │   ├── variables.tf
+│   │       │   │   └── outputs.tf
+│   │       │   ├── cert-manager/
+│   │       │   │   ├── main.tf
+│   │       │   │   ├── variables.tf
+│   │       │   │   └── outputs.tf
+│   │       │   ├── monitoring/
+│   │       │   │   ├── main.tf
+│   │       │   │   ├── variables.tf
+│   │       │   │   └── outputs.tf
+│   │       │   └── security-stack/
+│   │       │       ├── main.tf
+│   │       │       ├── variables.tf
+│   │       │       └── outputs.tf
+│   │       └── observability/
+│   │           ├── main.tf
+│   │           ├── variables.tf
+│   │           └── outputs.tf
+│   └── prod/                             # Prod stack (AWS EKS)
+│       ├── stack.tfstack
+│       ├── deployment.tfdeploy
+│       ├── terraform.tfvars
+│       ├── locals.tf
+│       └── components/
+│           ├── global/
+│           │   ├── kms/
+│           │   │   ├── main.tf
+│           │   │   ├── variables.tf
+│           │   │   └── outputs.tf
+│           │   ├── route53/
+│           │   │   ├── main.tf
+│           │   │   ├── variables.tf
+│           │   │   └── outputs.tf
+│           │   └── iam-global/
+│           │       ├── main.tf
+│           │       ├── variables.tf
+│           │       └── outputs.tf
 │           ├── vpc/
-│           │   ├── terragrunt.hcl
-│           │   └── vpc.yaml
+│           │   ├── main.tf
+│           │   ├── variables.tf
+│           │   └── outputs.tf
 │           ├── iam/
-│           │   ├── terragrunt.hcl
-│           │   └── roles.yaml
+│           │   ├── main.tf
+│           │   ├── variables.tf
+│           │   └── outputs.tf
 │           ├── security/
-│           │   ├── terragrunt.hcl
-│           │   └── security.yaml
+│           │   ├── main.tf
+│           │   ├── variables.tf
+│           │   └── outputs.tf
 │           ├── eks-cluster/
-│           │   ├── terragrunt.hcl
-│           │   └── cluster.yaml
+│           │   ├── main.tf
+│           │   ├── variables.tf
+│           │   └── outputs.tf
 │           ├── eks-addons/
-│           │   ├── terragrunt.hcl
 │           │   ├── core-addons/
-│           │   │   ├── terragrunt.hcl
-│           │   │   └── addons.yaml
+│           │   │   ├── main.tf
+│           │   │   ├── variables.tf
+│           │   │   └── outputs.tf
 │           │   ├── ingress-controller/
-│           │   │   ├── terragrunt.hcl
-│           │   │   └── ingress.yaml
+│           │   │   ├── main.tf
+│           │   │   ├── variables.tf
+│           │   │   └── outputs.tf
 │           │   ├── autoscaler/
-│           │   │   ├── terragrunt.hcl
-│           │   │   └── autoscaler.yaml
+│           │   │   ├── main.tf
+│           │   │   ├── variables.tf
+│           │   │   └── outputs.tf
 │           │   ├── cert-manager/
-│           │   │   ├── terragrunt.hcl
-│           │   │   └── cert-manager.yaml
+│           │   │   ├── main.tf
+│           │   │   ├── variables.tf
+│           │   │   └── outputs.tf
 │           │   ├── monitoring/
-│           │   │   ├── terragrunt.hcl
-│           │   │   └── monitoring.yaml
+│           │   │   ├── main.tf
+│           │   │   ├── variables.tf
+│           │   │   └── outputs.tf
 │           │   └── security-stack/
-│           │       ├── terragrunt.hcl
-│           │       └── security-stack.yaml
+│           │       ├── main.tf
+│           │       ├── variables.tf
+│           │       └── outputs.tf
 │           └── observability/
-│               ├── terragrunt.hcl
-│               └── observability.yaml
-├── modules/
+│               ├── main.tf
+│               ├── variables.tf
+│               └── outputs.tf
+├── modules/                              # Reusable Terraform modules
 │   ├── vpc/
 │   │   ├── main.tf
 │   │   ├── variables.tf
@@ -275,24 +322,64 @@ terraform-eks-zero-trust/
 │   │       ├── falco.tf
 │   │       ├── policy_agent.tf
 │   │       └── network_policies.tf
-│   └── observability/
+│   ├── observability/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   ├── outputs.tf
+│   │   ├── versions.tf
+│   │   ├── data.tf
+│   │   ├── locals.tf
+│   │   ├── cloudwatch.tf
+│   │   ├── cloudtrail.tf
+│   │   ├── config.tf
+│   │   ├── guard_duty.tf
+│   │   ├── security_hub.tf
+│   │   ├── inspector.tf
+│   │   └── xray.tf
+│   ├── kind-cluster/                     # Local Kind cluster module
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   ├── outputs.tf
+│   │   ├── versions.tf
+│   │   ├── cluster.tf
+│   │   ├── config.tf
+│   │   └── networking.tf
+│   └── rancher-cluster/                  # Rancher Desktop cluster module
 │       ├── main.tf
 │       ├── variables.tf
 │       ├── outputs.tf
 │       ├── versions.tf
-│       ├── data.tf
-│       ├── locals.tf
-│       ├── cloudwatch.tf
-│       ├── cloudtrail.tf
+│       ├── cluster.tf
 │       ├── config.tf
-│       ├── guard_duty.tf
-│       ├── security_hub.tf
-│       ├── inspector.tf
-│       └── xray.tf
-├── test/
-│   ├── go.mod
-│   ├── go.sum
-│   ├── Makefile
+│       └── networking.tf
+├── tests/                                # Terraform native tests
+│   ├── unit/
+│   │   ├── vpc_test.tftest
+│   │   ├── iam_test.tftest
+│   │   ├── security_test.tftest
+│   │   ├── eks_cluster_test.tftest
+│   │   ├── core_addons_test.tftest
+│   │   ├── ingress_controller_test.tftest
+│   │   ├── autoscaler_test.tftest
+│   │   ├── cert_manager_test.tftest
+│   │   ├── monitoring_test.tftest
+│   │   ├── security_stack_test.tftest
+│   │   └── observability_test.tftest
+│   ├── integration/
+│   │   ├── vpc_integration_test.tftest
+│   │   ├── iam_integration_test.tftest
+│   │   ├── eks_integration_test.tftest
+│   │   ├── networking_integration_test.tftest
+│   │   ├── security_integration_test.tftest
+│   │   ├── addons_integration_test.tftest
+│   │   └── full_stack_integration_test.tftest
+│   ├── e2e/
+│   │   ├── e2e_test.tftest
+│   │   ├── deployment_test.tftest
+│   │   ├── security_compliance_test.tftest
+│   │   ├── performance_test.tftest
+│   │   ├── disaster_recovery_test.tftest
+│   │   └── upgrade_test.tftest
 │   ├── fixtures/
 │   │   ├── vpc/
 │   │   │   ├── main.tf
@@ -307,56 +394,34 @@ terraform-eks-zero-trust/
 │   │   │   ├── variables.tf
 │   │   │   └── outputs.tf
 │   │   └── full-stack/
-│   │       ├── terragrunt.hcl
 │   │       ├── main.tf
 │   │       ├── variables.tf
 │   │       └── outputs.tf
-│   ├── unit/
-│   │   ├── vpc_test.go
-│   │   ├── iam_test.go
-│   │   ├── security_test.go
-│   │   ├── eks_cluster_test.go
-│   │   ├── core_addons_test.go
-│   │   ├── ingress_controller_test.go
-│   │   ├── autoscaler_test.go
-│   │   ├── cert_manager_test.go
-│   │   ├── monitoring_test.go
-│   │   ├── security_stack_test.go
-│   │   └── observability_test.go
-│   ├── integration/
-│   │   ├── vpc_integration_test.go
-│   │   ├── iam_integration_test.go
-│   │   ├── eks_integration_test.go
-│   │   ├── networking_integration_test.go
-│   │   ├── security_integration_test.go
-│   │   ├── addons_integration_test.go
-│   │   └── full_stack_integration_test.go
-│   ├── e2e/
-│   │   ├── e2e_test.go
-│   │   ├── deployment_test.go
-│   │   ├── security_compliance_test.go
-│   │   ├── performance_test.go
-│   │   ├── disaster_recovery_test.go
-│   │   └── upgrade_test.go
 │   ├── helpers/
-│   │   ├── aws.go
-│   │   ├── k8s.go
-│   │   ├── helm.go
-│   │   ├── terragrunt.go
-│   │   ├── ssh.go
-│   │   ├── retry.go
-│   │   └── random.go
+│   │   ├── aws.tftest
+│   │   ├── k8s.tftest
+│   │   ├── helm.tftest
+│   │   ├── retry.tftest
+│   │   └── random.tftest
 │   ├── examples/
-│   │   ├── basic_vpc_test.go
-│   │   ├── complete_eks_test.go
-│   │   ├── security_hardened_test.go
-│   │   └── multi_region_test.go
+│   │   ├── basic_vpc_test.tftest
+│   │   ├── complete_eks_test.tftest
+│   │   ├── security_hardened_test.tftest
+│   │   └── multi_region_test.tftest
 │   └── mocks/
-│       ├── aws_mock.go
-│       ├── k8s_mock.go
-│       └── helm_mock.go
+│       ├── aws_mock.tftest
+│       ├── k8s_mock.tftest
+│       └── helm_mock.tftest
+├── .tasks/                              # Task runner child files
+│   ├── terraform.yml
+│   ├── testing.yml
+│   ├── kubernetes.yml
+│   ├── security.yml
+│   ├── ci-cd.yml
+│   ├── cleanup.yml
+│   └── utilities.yml
 ├── scripts/
-│   ├── terragrunt/
+│   ├── terraform/
 │   │   ├── setup.sh
 │   │   ├── plan-all.sh
 │   │   ├── apply-all.sh
@@ -392,11 +457,15 @@ terraform-eks-zero-trust/
 │   │   ├── namespace.yaml
 │   │   └── common-labels.yaml
 │   ├── overlays/
+│   │   ├── test/
+│   │   │   ├── kustomization.yaml
+│   │   │   ├── replica-patch.yaml
+│   │   │   └── resource-patch.yaml
 │   │   ├── dev/
 │   │   │   ├── kustomization.yaml
 │   │   │   ├── replica-patch.yaml
 │   │   │   └── resource-patch.yaml
-│   │   ├── staging/
+│   │   ├── pre-prod/
 │   │   │   ├── kustomization.yaml
 │   │   │   ├── replica-patch.yaml
 │   │   │   └── resource-patch.yaml
@@ -548,9 +617,10 @@ terraform-eks-zero-trust/
 │   │   ├── overview.md
 │   │   ├── network-architecture.md
 │   │   ├── security-architecture.md
+│   │   ├── stacks-and-deployments.md
 │   │   └── data-flow.md
 │   ├── deployment/
-│   │   ├── terragrunt-guide.md
+│   │   ├── terraform-stacks-guide.md
 │   │   ├── testing-guide.md
 │   │   ├── ci-cd-setup.md
 │   │   └── troubleshooting.md
@@ -578,11 +648,11 @@ terraform-eks-zero-trust/
 │       ├── backup-restore.md
 │       └── incident-response.md
 ├── policies/
-│   ├── terragrunt/
-│   │   ├── common-policies.hcl
-│   │   ├── security-policies.hcl
-│   │   ├── cost-policies.hcl
-│   │   └── compliance-policies.hcl
+│   ├── terraform/
+│   │   ├── common-policies.tf
+│   │   ├── security-policies.tf
+│   │   ├── cost-policies.tf
+│   │   └── compliance-policies.tf
 │   ├── opa/
 │   │   ├── security.rego
 │   │   ├── networking.rego
@@ -606,20 +676,20 @@ terraform-eks-zero-trust/
 │           └── false_positives.yaml
 ├── .github/
 │   ├── workflows/
-│   │   ├── terragrunt-plan.yml
-│   │   ├── terragrunt-apply.yml
-│   │   ├── terratest-unit.yml
-│   │   ├── terratest-integration.yml
-│   │   ├── terratest-e2e.yml
+│   │   ├── terraform-plan.yml
+│   │   ├── terraform-apply.yml
+│   │   ├── terraform-test-unit.yml
+│   │   ├── terraform-test-integration.yml
+│   │   ├── terraform-test-e2e.yml
 │   │   ├── security-scan.yml
 │   │   ├── compliance-check.yml
 │   │   ├── cost-estimation.yml
 │   │   └── destroy.yml
 │   ├── actions/
-│   │   ├── setup-terragrunt/
+│   │   ├── setup-terraform/
 │   │   │   ├── action.yml
 │   │   │   └── setup.sh
-│   │   ├── setup-terratest/
+│   │   ├── setup-testing/
 │   │   │   ├── action.yml
 │   │   │   └── setup.sh
 │   │   ├── aws-assume-role/
@@ -644,10 +714,13 @@ terraform-eks-zero-trust/
 │   ├── helmfile.lock
 │   ├── environments/
 │   │   ├── default.yaml
+│   │   ├── test/
+│   │   │   ├── values.yaml
+│   │   │   └── secrets.yaml
 │   │   ├── dev/
 │   │   │   ├── values.yaml
 │   │   │   └── secrets.yaml
-│   │   ├── staging/
+│   │   ├── pre-prod/
 │   │   │   ├── values.yaml
 │   │   │   └── secrets.yaml
 │   │   └── prod/
@@ -679,11 +752,11 @@ terraform-eks-zero-trust/
 │       └── post-upgrade.sh
 ├── tools/
 │   ├── docker/
-│   │   ├── terragrunt/
+│   │   ├── terraform/
 │   │   │   ├── Dockerfile
 │   │   │   ├── entrypoint.sh
 │   │   │   └── .dockerignore
-│   │   ├── terratest/
+│   │   ├── terraform-testing/
 │   │   │   ├── Dockerfile
 │   │   │   ├── entrypoint.sh
 │   │   │   └── .dockerignore
@@ -697,6 +770,14 @@ terraform-eks-zero-trust/
 │   │   │   ├── common-labels.yaml
 │   │   │   └── common-annotations.yaml
 │   │   ├── overlays/
+│   │   │   ├── test/
+│   │   │   │   ├── kustomization.yaml
+│   │   │   │   ├── patches/
+│   │   │   │   │   ├── replica-patch.yaml
+│   │   │   │   │   ├── resource-patch.yaml
+│   │   │   │   │   └── env-patch.yaml
+│   │   │   │   └── configmaps/
+│   │   │   │       └── app-config.yaml
 │   │   │   ├── dev/
 │   │   │   │   ├── kustomization.yaml
 │   │   │   │   ├── patches/
@@ -705,7 +786,7 @@ terraform-eks-zero-trust/
 │   │   │   │   │   └── env-patch.yaml
 │   │   │   │   └── configmaps/
 │   │   │   │       └── app-config.yaml
-│   │   │   ├── staging/
+│   │   │   ├── pre-prod/
 │   │   │   │   ├── kustomization.yaml
 │   │   │   │   ├── patches/
 │   │   │   │   │   ├── replica-patch.yaml
@@ -751,8 +832,9 @@ terraform-eks-zero-trust/
 │   │   │   │   ├── tracing.yaml
 │   │   │   │   └── service-mesh.yaml
 │   │   │   └── workloads/
+│   │   │       ├── test-apps.yaml
 │   │   │       ├── dev-apps.yaml
-│   │   │       ├── staging-apps.yaml
+│   │   │       ├── pre-prod-apps.yaml
 │   │   │       └── prod-apps.yaml
 │   │   ├── projects/
 │   │   │   ├── infrastructure.yaml
@@ -770,6 +852,19 @@ terraform-eks-zero-trust/
 │   │       └── notifications-cm.yaml
 │   ├── flux/
 │   │   ├── clusters/
+│   │   │   ├── test/
+│   │   │   │   ├── flux-system/
+│   │   │   │   │   ├── gotk-components.yaml
+│   │   │   │   │   ├── gotk-sync.yaml
+│   │   │   │   │   └── kustomization.yaml
+│   │   │   │   ├── infrastructure/
+│   │   │   │   │   ├── controllers/
+│   │   │   │   │   ├── configs/
+│   │   │   │   │   └── sources/
+│   │   │   │   └── apps/
+│   │   │   │       ├── base/
+│   │   │   │       ├── test/
+│   │   │   │       └── kustomization.yaml
 │   │   │   ├── dev/
 │   │   │   │   ├── flux-system/
 │   │   │   │   │   ├── gotk-components.yaml
@@ -783,7 +878,7 @@ terraform-eks-zero-trust/
 │   │   │   │       ├── base/
 │   │   │   │       ├── dev/
 │   │   │   │       └── kustomization.yaml
-│   │   │   ├── staging/
+│   │   │   ├── pre-prod/
 │   │   │   │   ├── flux-system/
 │   │   │   │   │   ├── gotk-components.yaml
 │   │   │   │   │   ├── gotk-sync.yaml
@@ -794,7 +889,7 @@ terraform-eks-zero-trust/
 │   │   │   │   │   └── sources/
 │   │   │   │   └── apps/
 │   │   │   │       ├── base/
-│   │   │   │       ├── staging/
+│   │   │   │       ├── pre-prod/
 │   │   │   │       └── kustomization.yaml
 │   │   │   └── prod/
 │   │   │       ├── flux-system/
@@ -828,11 +923,15 @@ terraform-eks-zero-trust/
 │   │       │   ├── kustomization.yaml
 │   │       │   ├── namespace.yaml
 │   │       │   └── common-resources.yaml
+│   │       ├── test/
+│   │       │   ├── kustomization.yaml
+│   │       │   ├── app-releases.yaml
+│   │       │   └── patches/
 │   │       ├── dev/
 │   │       │   ├── kustomization.yaml
 │   │       │   ├── app-releases.yaml
 │   │       │   └── patches/
-│   │       ├── staging/
+│   │       ├── pre-prod/
 │   │       │   ├── kustomization.yaml
 │   │       │   ├── app-releases.yaml
 │   │       │   └── patches/
@@ -856,11 +955,15 @@ terraform-eks-zero-trust/
 │       │   ├── xrds.yaml
 │       │   └── xs3.yaml
 │       └── claims/
+│           ├── test/
+│           │   ├── vpc-claim.yaml
+│           │   ├── eks-claim.yaml
+│           │   └── rds-claim.yaml
 │           ├── dev/
 │           │   ├── vpc-claim.yaml
 │           │   ├── eks-claim.yaml
 │           │   └── rds-claim.yaml
-│           ├── staging/
+│           ├── pre-prod/
 │           │   ├── vpc-claim.yaml
 │           │   ├── eks-claim.yaml
 │           │   └── rds-claim.yaml
@@ -869,12 +972,11 @@ terraform-eks-zero-trust/
 │               ├── eks-claim.yaml
 │               └── rds-claim.yaml
 ├── configs/
-│   ├── terragrunt/
-│   │   ├── common.hcl
-│   │   ├── backend.hcl
-│   │   ├── provider.hcl
-│   │   ├── hooks.hcl
-│   │   └── remote_state.hcl
+│   ├── terraform/
+│   │   ├── backend.tf
+│   │   ├── provider.tf
+│   │   ├── variables.tf
+│   │   └── remote_state.tf
 │   ├── aws/
 │   │   ├── assume-role-policy.json
 │   │   ├── cloudformation-templates/
@@ -896,16 +998,8 @@ terraform-eks-zero-trust/
 │   ├── launch.json
 │   ├── tasks.json
 │   └── snippets/
-│       ├── terragrunt.json
 │       ├── terraform.json
-│       └── go.json
-├── .idea/
-│   ├── terraform-eks.iml
-│   ├── modules.xml
-│   ├── misc.xml
-│   ├── vcs.xml
-│   └── inspectionProfiles/
-│       └── Project_Default.xml
+│       └── hcl.json
 ├── monitoring/
 │   ├── custom-metrics/
 │   │   ├── prometheus-adapter.yaml
@@ -914,7 +1008,7 @@ terraform-eks-zero-trust/
 │   ├── dashboards/
 │   │   ├── terraform/
 │   │   │   ├── terraform-state.json
-│   │   │   ├── terragrunt-runs.json
+│   │   │   ├── terraform-runs.json
 │   │   │   └── infrastructure-costs.json
 │   │   ├── security/
 │   │   │   ├── falco-security.json
@@ -1125,8 +1219,9 @@ terraform-eks-zero-trust/
 │   ├── sealed-secrets/
 │   │   ├── sealed-secrets-controller.yaml
 │   │   ├── sealed-secrets/
+│   │   │   ├── test-secrets.yaml
 │   │   │   ├── dev-secrets.yaml
-│   │   │   ├── staging-secrets.yaml
+│   │   │   ├── pre-prod-secrets.yaml
 │   │   │   └── prod-secrets.yaml
 │   │   └── bitnami-labs-sealed-secrets.key
 │   ├── vault/
@@ -1160,49 +1255,30 @@ terraform-eks-zero-trust/
 │           ├── encryption-at-rest.yaml
 │           ├── encryption-in-transit.yaml
 │           └── key-management.yaml
-└── .terraform-version-scp.json
-│   ├── kubernetes/
-│   │   ├── kubeconfig-template.yaml
-│   │   ├── cluster-config.yaml
-│   │   └── admission-config.yaml
-│   └── monitoring/
-│       ├── prometheus-rules/
-│       │   ├── kubernetes.yaml
-│       │   ├── node-exporter.yaml
-│       │   ├── kube-state-metrics.yaml
-│       │   └── custom-rules.yaml
-│       ├── grafana-dashboards/
-│       │   ├── kubernetes-cluster.json
-│       │   ├── kubernetes-nodes.json
-│       │   ├── kubernetes-pods.json
-│       │   └── application-overview.json
-│       └── alertmanager-config/
-│           ├── routing-rules.yaml
-│           ├── inhibit-rules.yaml
-│           └── templates.yaml
 ├── examples/
 │   ├── minimal/
 │   │   ├── README.md
-│   │   ├── terragrunt.hcl
+│   │   ├── stack.tfstack
 │   │   ├── main.tf
 │   │   ├── variables.tf
 │   │   └── outputs.tf
 │   ├── complete/
 │   │   ├── README.md
-│   │   ├── terragrunt.hcl
+│   │   ├── stack.tfstack
 │   │   ├── main.tf
 │   │   ├── variables.tf
 │   │   └── outputs.tf
 │   ├── multi-region/
 │   │   ├── README.md
 │   │   ├── us-east-1/
-│   │   │   └── terragrunt.hcl
+│   │   │   └── stack.tfstack
 │   │   ├── eu-west-1/
-│   │   │   └── terragrunt.hcl
+│   │   │   └── stack.tfstack
 │   │   └── ap-southeast-1/
-│   │       └── terragrunt.hcl
+│   │       └── stack.tfstack
 │   └── security-hardened/
 │       ├── README.md
-│       ├── terragrunt.hcl
+│       ├── stack.tfstack
 │       ├── security-policies.yaml
-│       └── compliance
+│       └── compliance.tf
+└── .terraform-version
