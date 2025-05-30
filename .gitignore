@@ -1,0 +1,42 @@
+# gitignore for terraform 1.12+
+# Local .terraform directories
+.terraform/
+# Local .terraform.lock.hcl files
+.terraform.lock.hcl
+# Local override files
+override.tf
+override.tf.json
+# Local variables files
+*.tfvars
+# CLI configuration files
+.terraformrc
+# Ignore plan files
+*.tfplan
+# Ignore state files
+*.tfstate
+# Ignore state backup files
+*.tfstate.backup
+# Ignore crash log files
+crash.log
+# Ignore provider binaries
+provider.tf
+# Ignore workspace files
+terraform.tfstate.d/
+# Ignore local execution files
+local.tfstate
+# Ignore sensitive output files
+sensitive_output.json
+# Ignore Terraform Cloud/Enterprise files
+terraform.tfvars.json
+# Ignore Terraform Cloud/Enterprise workspace files
+terraform.tfstate.d/
+# Ignore Terraform Cloud/Enterprise plan files
+*.tfplan.json
+# Ignore Terraform Cloud/Enterprise state files
+*.tfstate.json
+# Ignore Terraform Cloud/Enterprise lock files
+*.terraform.lock.json
+# Ignore Terraform Cloud/Enterprise override files
+override.tf.json
+# Ignore Terraform Cloud/Enterprise variable files
+*.tfvars.json                   

@@ -1,0 +1,1209 @@
+terraform-eks-zero-trust/
+├── README.md
+├── .gitignore
+├── .pre-commit-config.yaml
+├── Makefile
+├── terragrunt.hcl
+├── common.hcl
+├── region.hcl
+├── account.hcl
+├── live/
+│   ├── terragrunt.hcl
+│   ├── account.hcl
+│   ├── region.hcl
+│   └── eu-west-1/
+│       ├── terragrunt.hcl
+│       ├── region.hcl
+│       ├── _global/
+│       │   ├── terragrunt.hcl
+│       │   ├── kms/
+│       │   │   ├── terragrunt.hcl
+│       │   │   └── kms.yaml
+│       │   ├── route53/
+│       │   │   ├── terragrunt.hcl
+│       │   │   └── domains.yaml
+│       │   └── iam-global/
+│       │       ├── terragrunt.hcl
+│       │       └── cross-account-roles.yaml
+│       ├── dev/
+│       │   ├── terragrunt.hcl
+│       │   ├── env.hcl
+│       │   ├── vpc/
+│       │   │   ├── terragrunt.hcl
+│       │   │   └── vpc.yaml
+│       │   ├── iam/
+│       │   │   ├── terragrunt.hcl
+│       │   │   └── roles.yaml
+│       │   ├── security/
+│       │   │   ├── terragrunt.hcl
+│       │   │   └── security.yaml
+│       │   ├── eks-cluster/
+│       │   │   ├── terragrunt.hcl
+│       │   │   └── cluster.yaml
+│       │   ├── eks-addons/
+│       │   │   ├── terragrunt.hcl
+│       │   │   ├── core-addons/
+│       │   │   │   ├── terragrunt.hcl
+│       │   │   │   └── addons.yaml
+│       │   │   ├── ingress-controller/
+│       │   │   │   ├── terragrunt.hcl
+│       │   │   │   └── ingress.yaml
+│       │   │   ├── autoscaler/
+│       │   │   │   ├── terragrunt.hcl
+│       │   │   │   └── autoscaler.yaml
+│       │   │   ├── cert-manager/
+│       │   │   │   ├── terragrunt.hcl
+│       │   │   │   └── cert-manager.yaml
+│       │   │   ├── monitoring/
+│       │   │   │   ├── terragrunt.hcl
+│       │   │   │   └── monitoring.yaml
+│       │   │   └── security-stack/
+│       │   │       ├── terragrunt.hcl
+│       │   │       └── security-stack.yaml
+│       │   └── observability/
+│       │       ├── terragrunt.hcl
+│       │       └── observability.yaml
+│       ├── staging/
+│       │   ├── terragrunt.hcl
+│       │   ├── env.hcl
+│       │   ├── vpc/
+│       │   │   ├── terragrunt.hcl
+│       │   │   └── vpc.yaml
+│       │   ├── iam/
+│       │   │   ├── terragrunt.hcl
+│       │   │   └── roles.yaml
+│       │   ├── security/
+│       │   │   ├── terragrunt.hcl
+│       │   │   └── security.yaml
+│       │   ├── eks-cluster/
+│       │   │   ├── terragrunt.hcl
+│       │   │   └── cluster.yaml
+│       │   ├── eks-addons/
+│       │   │   ├── terragrunt.hcl
+│       │   │   ├── core-addons/
+│       │   │   │   ├── terragrunt.hcl
+│       │   │   │   └── addons.yaml
+│       │   │   ├── ingress-controller/
+│       │   │   │   ├── terragrunt.hcl
+│       │   │   │   └── ingress.yaml
+│       │   │   ├── autoscaler/
+│       │   │   │   ├── terragrunt.hcl
+│       │   │   │   └── autoscaler.yaml
+│       │   │   ├── cert-manager/
+│       │   │   │   ├── terragrunt.hcl
+│       │   │   │   └── cert-manager.yaml
+│       │   │   ├── monitoring/
+│       │   │   │   ├── terragrunt.hcl
+│       │   │   │   └── monitoring.yaml
+│       │   │   └── security-stack/
+│       │   │       ├── terragrunt.hcl
+│       │   │       └── security-stack.yaml
+│       │   └── observability/
+│       │       ├── terragrunt.hcl
+│       │       └── observability.yaml
+│       └── prod/
+│           ├── terragrunt.hcl
+│           ├── env.hcl
+│           ├── vpc/
+│           │   ├── terragrunt.hcl
+│           │   └── vpc.yaml
+│           ├── iam/
+│           │   ├── terragrunt.hcl
+│           │   └── roles.yaml
+│           ├── security/
+│           │   ├── terragrunt.hcl
+│           │   └── security.yaml
+│           ├── eks-cluster/
+│           │   ├── terragrunt.hcl
+│           │   └── cluster.yaml
+│           ├── eks-addons/
+│           │   ├── terragrunt.hcl
+│           │   ├── core-addons/
+│           │   │   ├── terragrunt.hcl
+│           │   │   └── addons.yaml
+│           │   ├── ingress-controller/
+│           │   │   ├── terragrunt.hcl
+│           │   │   └── ingress.yaml
+│           │   ├── autoscaler/
+│           │   │   ├── terragrunt.hcl
+│           │   │   └── autoscaler.yaml
+│           │   ├── cert-manager/
+│           │   │   ├── terragrunt.hcl
+│           │   │   └── cert-manager.yaml
+│           │   ├── monitoring/
+│           │   │   ├── terragrunt.hcl
+│           │   │   └── monitoring.yaml
+│           │   └── security-stack/
+│           │       ├── terragrunt.hcl
+│           │       └── security-stack.yaml
+│           └── observability/
+│               ├── terragrunt.hcl
+│               └── observability.yaml
+├── modules/
+│   ├── vpc/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   ├── outputs.tf
+│   │   ├── versions.tf
+│   │   ├── data.tf
+│   │   ├── locals.tf
+│   │   ├── vpc.tf
+│   │   ├── subnets.tf
+│   │   ├── internet_gateway.tf
+│   │   ├── nat_gateway.tf
+│   │   ├── route_tables.tf
+│   │   ├── nacls.tf
+│   │   ├── vpc_endpoints.tf
+│   │   ├── flow_logs.tf
+│   │   └── security_groups.tf
+│   ├── iam/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   ├── outputs.tf
+│   │   ├── versions.tf
+│   │   ├── data.tf
+│   │   ├── locals.tf
+│   │   ├── cluster_service_role.tf
+│   │   ├── node_group_role.tf
+│   │   ├── pod_execution_role.tf
+│   │   ├── oidc_provider.tf
+│   │   ├── irsa_roles.tf
+│   │   ├── policies/
+│   │   │   ├── cluster_policy.json.tpl
+│   │   │   ├── node_policy.json.tpl
+│   │   │   ├── cni_policy.json.tpl
+│   │   │   ├── container_registry_policy.json.tpl
+│   │   │   ├── ebs_csi_policy.json.tpl
+│   │   │   ├── efs_csi_policy.json.tpl
+│   │   │   ├── load_balancer_controller_policy.json.tpl
+│   │   │   ├── cluster_autoscaler_policy.json.tpl
+│   │   │   ├── cert_manager_policy.json.tpl
+│   │   │   └── external_dns_policy.json.tpl
+│   │   └── trust_policies/
+│   │       ├── cluster_trust_policy.json.tpl
+│   │       ├── node_trust_policy.json.tpl
+│   │       └── oidc_trust_policy.json.tpl
+│   ├── security/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   ├── outputs.tf
+│   │   ├── versions.tf
+│   │   ├── data.tf
+│   │   ├── locals.tf
+│   │   ├── kms.tf
+│   │   ├── secrets_manager.tf
+│   │   ├── parameter_store.tf
+│   │   ├── security_groups.tf
+│   │   └── waf.tf
+│   ├── eks-cluster/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   ├── outputs.tf
+│   │   ├── versions.tf
+│   │   ├── data.tf
+│   │   ├── locals.tf
+│   │   ├── cluster.tf
+│   │   ├── cluster_security_group.tf
+│   │   ├── cluster_encryption.tf
+│   │   ├── cluster_logging.tf
+│   │   ├── cluster_addons.tf
+│   │   ├── node_groups.tf
+│   │   ├── fargate_profiles.tf
+│   │   └── access_entries.tf
+│   ├── eks-addons/
+│   │   ├── core-addons/
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   ├── outputs.tf
+│   │   │   ├── versions.tf
+│   │   │   ├── data.tf
+│   │   │   ├── locals.tf
+│   │   │   ├── vpc_cni.tf
+│   │   │   ├── coredns.tf
+│   │   │   ├── kube_proxy.tf
+│   │   │   ├── ebs_csi.tf
+│   │   │   ├── efs_csi.tf
+│   │   │   └── metrics_server.tf
+│   │   ├── ingress-controller/
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   ├── outputs.tf
+│   │   │   ├── versions.tf
+│   │   │   ├── data.tf
+│   │   │   ├── locals.tf
+│   │   │   ├── aws_load_balancer_controller.tf
+│   │   │   ├── nginx_ingress.tf
+│   │   │   └── cilium.tf
+│   │   ├── autoscaler/
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   ├── outputs.tf
+│   │   │   ├── versions.tf
+│   │   │   ├── data.tf
+│   │   │   ├── locals.tf
+│   │   │   ├── cluster_autoscaler.tf
+│   │   │   ├── karpenter.tf
+│   │   │   └── vertical_pod_autoscaler.tf
+│   │   ├── cert-manager/
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   ├── outputs.tf
+│   │   │   ├── versions.tf
+│   │   │   ├── data.tf
+│   │   │   ├── locals.tf
+│   │   │   ├── cert_manager.tf
+│   │   │   ├── cluster_issuer.tf
+│   │   │   └── external_dns.tf
+│   │   ├── monitoring/
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   ├── outputs.tf
+│   │   │   ├── versions.tf
+│   │   │   ├── data.tf
+│   │   │   ├── locals.tf
+│   │   │   ├── prometheus.tf
+│   │   │   ├── grafana.tf
+│   │   │   ├── alertmanager.tf
+│   │   │   └── jaeger.tf
+│   │   └── security-stack/
+│   │       ├── main.tf
+│   │       ├── variables.tf
+│   │       ├── outputs.tf
+│   │       ├── versions.tf
+│   │       ├── data.tf
+│   │       ├── locals.tf
+│   │       ├── opa_gatekeeper.tf
+│   │       ├── falco.tf
+│   │       ├── policy_agent.tf
+│   │       └── network_policies.tf
+│   └── observability/
+│       ├── main.tf
+│       ├── variables.tf
+│       ├── outputs.tf
+│       ├── versions.tf
+│       ├── data.tf
+│       ├── locals.tf
+│       ├── cloudwatch.tf
+│       ├── cloudtrail.tf
+│       ├── config.tf
+│       ├── guard_duty.tf
+│       ├── security_hub.tf
+│       ├── inspector.tf
+│       └── xray.tf
+├── test/
+│   ├── go.mod
+│   ├── go.sum
+│   ├── Makefile
+│   ├── fixtures/
+│   │   ├── vpc/
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   └── outputs.tf
+│   │   ├── iam/
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   └── outputs.tf
+│   │   ├── eks-cluster/
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   └── outputs.tf
+│   │   └── full-stack/
+│   │       ├── terragrunt.hcl
+│   │       ├── main.tf
+│   │       ├── variables.tf
+│   │       └── outputs.tf
+│   ├── unit/
+│   │   ├── vpc_test.go
+│   │   ├── iam_test.go
+│   │   ├── security_test.go
+│   │   ├── eks_cluster_test.go
+│   │   ├── core_addons_test.go
+│   │   ├── ingress_controller_test.go
+│   │   ├── autoscaler_test.go
+│   │   ├── cert_manager_test.go
+│   │   ├── monitoring_test.go
+│   │   ├── security_stack_test.go
+│   │   └── observability_test.go
+│   ├── integration/
+│   │   ├── vpc_integration_test.go
+│   │   ├── iam_integration_test.go
+│   │   ├── eks_integration_test.go
+│   │   ├── networking_integration_test.go
+│   │   ├── security_integration_test.go
+│   │   ├── addons_integration_test.go
+│   │   └── full_stack_integration_test.go
+│   ├── e2e/
+│   │   ├── e2e_test.go
+│   │   ├── deployment_test.go
+│   │   ├── security_compliance_test.go
+│   │   ├── performance_test.go
+│   │   ├── disaster_recovery_test.go
+│   │   └── upgrade_test.go
+│   ├── helpers/
+│   │   ├── aws.go
+│   │   ├── k8s.go
+│   │   ├── helm.go
+│   │   ├── terragrunt.go
+│   │   ├── ssh.go
+│   │   ├── retry.go
+│   │   └── random.go
+│   ├── examples/
+│   │   ├── basic_vpc_test.go
+│   │   ├── complete_eks_test.go
+│   │   ├── security_hardened_test.go
+│   │   └── multi_region_test.go
+│   └── mocks/
+│       ├── aws_mock.go
+│       ├── k8s_mock.go
+│       └── helm_mock.go
+├── scripts/
+│   ├── terragrunt/
+│   │   ├── setup.sh
+│   │   ├── plan-all.sh
+│   │   ├── apply-all.sh
+│   │   ├── destroy-all.sh
+│   │   ├── validate.sh
+│   │   └── format.sh
+│   ├── testing/
+│   │   ├── run-unit-tests.sh
+│   │   ├── run-integration-tests.sh
+│   │   ├── run-e2e-tests.sh
+│   │   ├── test-cleanup.sh
+│   │   └── parallel-test.sh
+│   ├── kubernetes/
+│   │   ├── kubectl-config.sh
+│   │   ├── helm-install.sh
+│   │   ├── security-scan.sh
+│   │   ├── backup.sh
+│   │   └── upgrade-cluster.sh
+│   ├── ci-cd/
+│   │   ├── docker-build.sh
+│   │   ├── security-scan.sh
+│   │   ├── compliance-check.sh
+│   │   └── notification.sh
+│   └── utilities/
+│       ├── generate-tfvars.sh
+│       ├── cost-estimation.sh
+│       ├── resource-cleanup.sh
+│       └── backup-state.sh
+├── manifests/
+│   ├── kustomization.yaml
+│   ├── base/
+│   │   ├── kustomization.yaml
+│   │   ├── namespace.yaml
+│   │   └── common-labels.yaml
+│   ├── overlays/
+│   │   ├── dev/
+│   │   │   ├── kustomization.yaml
+│   │   │   ├── replica-patch.yaml
+│   │   │   └── resource-patch.yaml
+│   │   ├── staging/
+│   │   │   ├── kustomization.yaml
+│   │   │   ├── replica-patch.yaml
+│   │   │   └── resource-patch.yaml
+│   │   └── prod/
+│   │       ├── kustomization.yaml
+│   │       ├── replica-patch.yaml
+│   │       └── resource-patch.yaml
+│   ├── namespaces/
+│   │   ├── kube-system.yaml
+│   │   ├── cert-manager.yaml
+│   │   ├── ingress-nginx.yaml
+│   │   ├── monitoring.yaml
+│   │   ├── security.yaml
+│   │   └── applications.yaml
+│   ├── network-policies/
+│   │   ├── default-deny-all.yaml
+│   │   ├── allow-dns.yaml
+│   │   ├── allow-same-namespace.yaml
+│   │   ├── ingress-controller-policy.yaml
+│   │   └── monitoring-policy.yaml
+│   ├── pod-security-standards/
+│   │   ├── restricted-pss.yaml
+│   │   ├── baseline-pss.yaml
+│   │   ├── privileged-pss.yaml
+│   │   └── namespace-labels.yaml
+│   ├── rbac/
+│   │   ├── cluster-roles/
+│   │   │   ├── developer-role.yaml
+│   │   │   ├── readonly-role.yaml
+│   │   │   ├── admin-role.yaml
+│   │   │   └── security-role.yaml
+│   │   ├── role-bindings/
+│   │   │   ├── developer-binding.yaml
+│   │   │   ├── readonly-binding.yaml
+│   │   │   ├── admin-binding.yaml
+│   │   │   └── security-binding.yaml
+│   │   └── service-accounts/
+│   │       ├── application-sa.yaml
+│   │       ├── monitoring-sa.yaml
+│   │       └── security-sa.yaml
+│   ├── security/
+│   │   ├── gatekeeper/
+│   │   │   ├── system/
+│   │   │   │   ├── config.yaml
+│   │   │   │   ├── namespace.yaml
+│   │   │   │   └── mutation-config.yaml
+│   │   │   ├── constraints/
+│   │   │   │   ├── required-labels.yaml
+│   │   │   │   ├── allowed-repos.yaml
+│   │   │   │   ├── resource-limits.yaml
+│   │   │   │   ├── security-context.yaml
+│   │   │   │   └── pod-security.yaml
+│   │   │   └── templates/
+│   │   │       ├── k8srequiredlabels.yaml
+│   │   │       ├── k8sallowedrepos.yaml
+│   │   │       ├── k8srequiredresources.yaml
+│   │   │       ├── k8ssecuritycontext.yaml
+│   │   │       └── k8spodsecurity.yaml
+│   │   ├── falco/
+│   │   │   ├── falco-config.yaml
+│   │   │   ├── falco-rules.yaml
+│   │   │   ├── falco-sidekick.yaml
+│   │   │   └── custom-rules.yaml
+│   │   └── network-security/
+│   │       ├── cilium-policies/
+│   │       │   ├── l3-l4-policy.yaml
+│   │       │   ├── l7-policy.yaml
+│   │       │   ├── egress-policy.yaml
+│   │       │   └── cluster-mesh-policy.yaml
+│   │       └── calico-policies/
+│   │           ├── global-network-policy.yaml
+│   │           ├── namespace-policy.yaml
+│   │           ├── pod-policy.yaml
+│   │           └── host-endpoint-policy.yaml
+│   ├── autoscaling/
+│   │   ├── hpa/
+│   │   │   ├── nginx-hpa.yaml
+│   │   │   ├── app-hpa.yaml
+│   │   │   ├── custom-metrics-hpa.yaml
+│   │   │   └── behavior-hpa.yaml
+│   │   ├── vpa/
+│   │   │   ├── vpa-recommender.yaml
+│   │   │   ├── vpa-updater.yaml
+│   │   │   ├── vpa-admission-controller.yaml
+│   │   │   └── app-vpa.yaml
+│   │   ├── cluster-autoscaler/
+│   │   │   ├── cluster-autoscaler-deployment.yaml
+│   │   │   ├── cluster-autoscaler-configmap.yaml
+│   │   │   └── priority-expander.yaml
+│   │   └── karpenter/
+│   │       ├── nodepool.yaml
+│   │       ├── nodeclass.yaml
+│   │       └── disruption.yaml
+│   ├── monitoring/
+│   │   ├── prometheus/
+│   │   │   ├── prometheus-config.yaml
+│   │   │   ├── alert-rules/
+│   │   │   │   ├── cluster-rules.yaml
+│   │   │   │   ├── node-rules.yaml
+│   │   │   │   ├── pod-rules.yaml
+│   │   │   │   └── application-rules.yaml
+│   │   │   ├── service-monitors/
+│   │   │   │   ├── kubernetes-sm.yaml
+│   │   │   │   ├── nginx-sm.yaml
+│   │   │   │   └── application-sm.yaml
+│   │   │   └── recording-rules.yaml
+│   │   ├── grafana/
+│   │   │   ├── grafana-config.yaml
+│   │   │   ├── dashboards/
+│   │   │   │   ├── cluster-overview.json
+│   │   │   │   ├── node-metrics.json
+│   │   │   │   ├── pod-metrics.json
+│   │   │   │   ├── ingress-metrics.json
+│   │   │   │   └── security-metrics.json
+│   │   │   ├── datasources.yaml
+│   │   │   └── notification-channels.yaml
+│   │   └── alertmanager/
+│   │       ├── alertmanager-config.yaml
+│   │       ├── notification-templates/
+│   │       │   ├── slack.tmpl
+│   │       │   ├── email.tmpl
+│   │       │   └── pagerduty.tmpl
+│   │       └── silence-rules.yaml
+│   └── ingress/
+│       ├── tls-certificates/
+│       │   ├── cluster-issuer-prod.yaml
+│       │   ├── cluster-issuer-staging.yaml
+│       │   ├── wildcard-certificate.yaml
+│       │   └── certificate-templates.yaml
+│       ├── nginx/
+│       │   ├── nginx-configmap.yaml
+│       │   ├── nginx-ingress-class.yaml
+│       │   ├── default-ssl-certificate.yaml
+│       │   ├── rate-limiting.yaml
+│       │   └── modsecurity.yaml
+│       ├── alb/
+│       │   ├── ingress-class.yaml
+│       │   ├── target-group-binding.yaml
+│       │   ├── alb-annotations.yaml
+│       │   └── waf-association.yaml
+│       └── cilium/
+│           ├── gateway-api.yaml
+│           ├── httproute.yaml
+│           ├── l7-policy.yaml
+│           └── service-mesh.yaml
+├── docs/
+│   ├── README.md
+│   ├── architecture/
+│   │   ├── overview.md
+│   │   ├── network-architecture.md
+│   │   ├── security-architecture.md
+│   │   └── data-flow.md
+│   ├── deployment/
+│   │   ├── terragrunt-guide.md
+│   │   ├── testing-guide.md
+│   │   ├── ci-cd-setup.md
+│   │   └── troubleshooting.md
+│   ├── operations/
+│   │   ├── monitoring.md
+│   │   ├── backup-restore.md
+│   │   ├── disaster-recovery.md
+│   │   ├── scaling.md
+│   │   └── upgrades.md
+│   ├── security/
+│   │   ├── security-guidelines.md
+│   │   ├── compliance.md
+│   │   ├── zero-trust.md
+│   │   ├── iam-strategy.md
+│   │   └── incident-response.md
+│   ├── development/
+│   │   ├── contributing.md
+│   │   ├── testing-strategy.md
+│   │   ├── code-standards.md
+│   │   └── review-process.md
+│   └── runbooks/
+│       ├── cluster-upgrade.md
+│       ├── node-replacement.md
+│       ├── certificate-renewal.md
+│       ├── backup-restore.md
+│       └── incident-response.md
+├── policies/
+│   ├── terragrunt/
+│   │   ├── common-policies.hcl
+│   │   ├── security-policies.hcl
+│   │   ├── cost-policies.hcl
+│   │   └── compliance-policies.hcl
+│   ├── opa/
+│   │   ├── security.rego
+│   │   ├── networking.rego
+│   │   ├── resources.rego
+│   │   ├── compliance.rego
+│   │   └── admission.rego
+│   ├── sentinel/
+│   │   ├── cost-control.sentinel
+│   │   ├── security-compliance.sentinel
+│   │   ├── resource-governance.sentinel
+│   │   └── policy-sets.hcl
+│   └── checkov/
+│       ├── .checkov.yaml
+│       ├── custom_checks/
+│       │   ├── eks_encryption.py
+│       │   ├── vpc_flow_logs.py
+│       │   ├── iam_least_privilege.py
+│       │   └── security_groups.py
+│       └── suppressions/
+│           ├── known_issues.yaml
+│           └── false_positives.yaml
+├── .github/
+│   ├── workflows/
+│   │   ├── terragrunt-plan.yml
+│   │   ├── terragrunt-apply.yml
+│   │   ├── terratest-unit.yml
+│   │   ├── terratest-integration.yml
+│   │   ├── terratest-e2e.yml
+│   │   ├── security-scan.yml
+│   │   ├── compliance-check.yml
+│   │   ├── cost-estimation.yml
+│   │   └── destroy.yml
+│   ├── actions/
+│   │   ├── setup-terragrunt/
+│   │   │   ├── action.yml
+│   │   │   └── setup.sh
+│   │   ├── setup-terratest/
+│   │   │   ├── action.yml
+│   │   │   └── setup.sh
+│   │   ├── aws-assume-role/
+│   │   │   ├── action.yml
+│   │   │   └── assume-role.sh
+│   │   ├── k8s-setup/
+│   │   │   ├── action.yml
+│   │   │   └── kubectl-setup.sh
+│   │   └── security-scan/
+│   │       ├── action.yml
+│   │       └── scan.sh
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug_report.md
+│   │   ├── feature_request.md
+│   │   ├── security_issue.md
+│   │   └── infrastructure_change.md
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   ├── CODEOWNERS
+│   └── dependabot.yml
+├── helmfile/
+│   ├── helmfile.yaml
+│   ├── helmfile.lock
+│   ├── environments/
+│   │   ├── default.yaml
+│   │   ├── dev/
+│   │   │   ├── values.yaml
+│   │   │   └── secrets.yaml
+│   │   ├── staging/
+│   │   │   ├── values.yaml
+│   │   │   └── secrets.yaml
+│   │   └── prod/
+│   │       ├── values.yaml
+│   │       └── secrets.yaml
+│   ├── releases/
+│   │   ├── ingress-nginx.yaml
+│   │   ├── cert-manager.yaml
+│   │   ├── cluster-autoscaler.yaml
+│   │   ├── prometheus-stack.yaml
+│   │   ├── grafana.yaml
+│   │   ├── external-dns.yaml
+│   │   ├── falco.yaml
+│   │   ├── gatekeeper.yaml
+│   │   └── cilium.yaml
+│   ├── charts/
+│   │   ├── custom-apps/
+│   │   │   ├── Chart.yaml
+│   │   │   ├── values.yaml
+│   │   │   └── templates/
+│   │   └── security-baseline/
+│   │       ├── Chart.yaml
+│   │       ├── values.yaml
+│   │       └── templates/
+│   └── hooks/
+│       ├── pre-install.sh
+│       ├── post-install.sh
+│       ├── pre-upgrade.sh
+│       └── post-upgrade.sh
+├── tools/
+│   ├── docker/
+│   │   ├── terragrunt/
+│   │   │   ├── Dockerfile
+│   │   │   ├── entrypoint.sh
+│   │   │   └── .dockerignore
+│   │   ├── terratest/
+│   │   │   ├── Dockerfile
+│   │   │   ├── entrypoint.sh
+│   │   │   └── .dockerignore
+│   │   └── dev-tools/
+│   │       ├── Dockerfile
+│   │       ├── tools-install.sh
+│   │       └── .dockerignore
+│   ├── kustomize/
+│   │   ├── base/
+│   │   │   ├── kustomization.yaml
+│   │   │   ├── common-labels.yaml
+│   │   │   └── common-annotations.yaml
+│   │   ├── overlays/
+│   │   │   ├── dev/
+│   │   │   │   ├── kustomization.yaml
+│   │   │   │   ├── patches/
+│   │   │   │   │   ├── replica-patch.yaml
+│   │   │   │   │   ├── resource-patch.yaml
+│   │   │   │   │   └── env-patch.yaml
+│   │   │   │   └── configmaps/
+│   │   │   │       └── app-config.yaml
+│   │   │   ├── staging/
+│   │   │   │   ├── kustomization.yaml
+│   │   │   │   ├── patches/
+│   │   │   │   │   ├── replica-patch.yaml
+│   │   │   │   │   ├── resource-patch.yaml
+│   │   │   │   │   └── env-patch.yaml
+│   │   │   │   └── configmaps/
+│   │   │   │       └── app-config.yaml
+│   │   │   └── prod/
+│   │   │       ├── kustomization.yaml
+│   │   │       ├── patches/
+│   │   │       │   ├── replica-patch.yaml
+│   │   │       │   ├── resource-patch.yaml
+│   │   │       │   └── env-patch.yaml
+│   │   │       └── configmaps/
+│   │   │           └── app-config.yaml
+│   │   └── components/
+│   │       ├── monitoring/
+│   │       │   ├── kustomization.yaml
+│   │       │   └── prometheus-config.yaml
+│   │       ├── security/
+│   │       │   ├── kustomization.yaml
+│   │       │   ├── network-policies.yaml
+│   │       │   └── pod-security.yaml
+│   │       └── ingress/
+│   │           ├── kustomization.yaml
+│   │           ├── nginx-config.yaml
+│   │           └── tls-config.yaml
+│   ├── argocd/
+│   │   ├── bootstrap/
+│   │   │   ├── argocd-install.yaml
+│   │   │   ├── app-of-apps.yaml
+│   │   │   └── root-app.yaml
+│   │   ├── applications/
+│   │   │   ├── infrastructure/
+│   │   │   │   ├── ingress-controller.yaml
+│   │   │   │   ├── cert-manager.yaml
+│   │   │   │   ├── monitoring.yaml
+│   │   │   │   ├── security.yaml
+│   │   │   │   └── autoscaling.yaml
+│   │   │   ├── platform/
+│   │   │   │   ├── logging.yaml
+│   │   │   │   ├── metrics.yaml
+│   │   │   │   ├── tracing.yaml
+│   │   │   │   └── service-mesh.yaml
+│   │   │   └── workloads/
+│   │   │       ├── dev-apps.yaml
+│   │   │       ├── staging-apps.yaml
+│   │   │       └── prod-apps.yaml
+│   │   ├── projects/
+│   │   │   ├── infrastructure.yaml
+│   │   │   ├── platform.yaml
+│   │   │   ├── applications.yaml
+│   │   │   └── security.yaml
+│   │   ├── repositories/
+│   │   │   ├── helm-repos.yaml
+│   │   │   ├── git-repos.yaml
+│   │   │   └── oci-repos.yaml
+│   │   └── config/
+│   │       ├── argocd-cm.yaml
+│   │       ├── argocd-rbac-cm.yaml
+│   │       ├── argocd-server-config.yaml
+│   │       └── notifications-cm.yaml
+│   ├── flux/
+│   │   ├── clusters/
+│   │   │   ├── dev/
+│   │   │   │   ├── flux-system/
+│   │   │   │   │   ├── gotk-components.yaml
+│   │   │   │   │   ├── gotk-sync.yaml
+│   │   │   │   │   └── kustomization.yaml
+│   │   │   │   ├── infrastructure/
+│   │   │   │   │   ├── controllers/
+│   │   │   │   │   ├── configs/
+│   │   │   │   │   └── sources/
+│   │   │   │   └── apps/
+│   │   │   │       ├── base/
+│   │   │   │       ├── dev/
+│   │   │   │       └── kustomization.yaml
+│   │   │   ├── staging/
+│   │   │   │   ├── flux-system/
+│   │   │   │   │   ├── gotk-components.yaml
+│   │   │   │   │   ├── gotk-sync.yaml
+│   │   │   │   │   └── kustomization.yaml
+│   │   │   │   ├── infrastructure/
+│   │   │   │   │   ├── controllers/
+│   │   │   │   │   ├── configs/
+│   │   │   │   │   └── sources/
+│   │   │   │   └── apps/
+│   │   │   │       ├── base/
+│   │   │   │       ├── staging/
+│   │   │   │       └── kustomization.yaml
+│   │   │   └── prod/
+│   │   │       ├── flux-system/
+│   │   │       │   ├── gotk-components.yaml
+│   │   │       │   ├── gotk-sync.yaml
+│   │   │       │   └── kustomization.yaml
+│   │   │       ├── infrastructure/
+│   │   │       │   ├── controllers/
+│   │   │       │   ├── configs/
+│   │   │       │   └── sources/
+│   │   │       └── apps/
+│   │   │           ├── base/
+│   │   │           ├── prod/
+│   │   │           └── kustomization.yaml
+│   │   ├── infrastructure/
+│   │   │   ├── controllers/
+│   │   │   │   ├── cert-manager.yaml
+│   │   │   │   ├── ingress-nginx.yaml
+│   │   │   │   ├── prometheus.yaml
+│   │   │   │   └── external-dns.yaml
+│   │   │   ├── configs/
+│   │   │   │   ├── cluster-issuers.yaml
+│   │   │   │   ├── ingress-config.yaml
+│   │   │   │   └── monitoring-config.yaml
+│   │   │   └── sources/
+│   │   │       ├── helm-repositories.yaml
+│   │   │       ├── git-repositories.yaml
+│   │   │       └── bucket-sources.yaml
+│   │   └── apps/
+│   │       ├── base/
+│   │       │   ├── kustomization.yaml
+│   │       │   ├── namespace.yaml
+│   │       │   └── common-resources.yaml
+│   │       ├── dev/
+│   │       │   ├── kustomization.yaml
+│   │       │   ├── app-releases.yaml
+│   │       │   └── patches/
+│   │       ├── staging/
+│   │       │   ├── kustomization.yaml
+│   │       │   ├── app-releases.yaml
+│   │       │   └── patches/
+│   │       └── prod/
+│   │           ├── kustomization.yaml
+│   │           ├── app-releases.yaml
+│   │           └── patches/
+│   └── crossplane/
+│       ├── providers/
+│       │   ├── aws-provider.yaml
+│       │   ├── kubernetes-provider.yaml
+│       │   └── helm-provider.yaml
+│       ├── compositions/
+│       │   ├── vpc-composition.yaml
+│       │   ├── eks-composition.yaml
+│       │   ├── rds-composition.yaml
+│       │   └── s3-composition.yaml
+│       ├── composite-resource-definitions/
+│       │   ├── xvpc.yaml
+│       │   ├── xeks.yaml
+│       │   ├── xrds.yaml
+│       │   └── xs3.yaml
+│       └── claims/
+│           ├── dev/
+│           │   ├── vpc-claim.yaml
+│           │   ├── eks-claim.yaml
+│           │   └── rds-claim.yaml
+│           ├── staging/
+│           │   ├── vpc-claim.yaml
+│           │   ├── eks-claim.yaml
+│           │   └── rds-claim.yaml
+│           └── prod/
+│               ├── vpc-claim.yaml
+│               ├── eks-claim.yaml
+│               └── rds-claim.yaml
+├── configs/
+│   ├── terragrunt/
+│   │   ├── common.hcl
+│   │   ├── backend.hcl
+│   │   ├── provider.hcl
+│   │   ├── hooks.hcl
+│   │   └── remote_state.hcl
+│   ├── aws/
+│   │   ├── assume-role-policy.json
+│   │   ├── cloudformation-templates/
+│   │   │   ├── bootstrap-stack.yaml
+│   │   │   ├── logging-stack.yaml
+│   │   │   └── security-stack.yaml
+│   │   └── service-control-policies/
+│   │       ├── security-scp.json
+│   │       ├── cost-control-scp.json
+│   │       └── compliance-rules.yaml
+├── .devcontainer/
+│   ├── devcontainer.json
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   └── post-create.sh
+├── .vscode/
+│   ├── settings.json
+│   ├── extensions.json
+│   ├── launch.json
+│   ├── tasks.json
+│   └── snippets/
+│       ├── terragrunt.json
+│       ├── terraform.json
+│       └── go.json
+├── .idea/
+│   ├── terraform-eks.iml
+│   ├── modules.xml
+│   ├── misc.xml
+│   ├── vcs.xml
+│   └── inspectionProfiles/
+│       └── Project_Default.xml
+├── monitoring/
+│   ├── custom-metrics/
+│   │   ├── prometheus-adapter.yaml
+│   │   ├── custom-metrics-api.yaml
+│   │   └── hpa-custom-metrics.yaml
+│   ├── dashboards/
+│   │   ├── terraform/
+│   │   │   ├── terraform-state.json
+│   │   │   ├── terragrunt-runs.json
+│   │   │   └── infrastructure-costs.json
+│   │   ├── security/
+│   │   │   ├── falco-security.json
+│   │   │   ├── gatekeeper-violations.json
+│   │   │   ├── network-policies.json
+│   │   │   └── compliance-overview.json
+│   │   └── application/
+│   │       ├── nginx-ingress.json
+│   │       ├── cert-manager.json
+│   │       ├── external-dns.json
+│   │       └── cluster-autoscaler.json
+│   ├── alerts/
+│   │   ├── infrastructure/
+│   │   │   ├── cluster-health.yaml
+│   │   │   ├── node-health.yaml
+│   │   │   ├── etcd-health.yaml
+│   │   │   └── api-server.yaml
+│   │   ├── security/
+│   │   │   ├── policy-violations.yaml
+│   │   │   ├── suspicious-activity.yaml
+│   │   │   ├── certificate-expiry.yaml
+│   │   │   └── rbac-violations.yaml
+│   │   └── application/
+│   │       ├── ingress-errors.yaml
+│   │       ├── dns-failures.yaml
+│   │       ├── scaling-issues.yaml
+│   │       └── resource-exhaustion.yaml
+│   └── exporters/
+│       ├── blackbox-exporter/
+│       │   ├── config.yaml
+│       │   └── probes.yaml
+│       ├── node-exporter/
+│       │   ├── config.yaml
+│       │   └── textfile-collectors/
+│       └── custom-exporters/
+│           ├── terraform-exporter.py
+│           ├── compliance-exporter.go
+│           └── cost-exporter.py
+├── backup/
+│   ├── scripts/
+│   │   ├── backup-etcd.sh
+│   │   ├── backup-state.sh
+│   │   ├── backup-secrets.sh
+│   │   └── restore-cluster.sh
+│   ├── policies/
+│   │   ├── velero-backup-policy.yaml
+│   │   ├── retention-policy.yaml
+│   │   └── schedule-policy.yaml
+│   ├── storage/
+│   │   ├── s3-backup-bucket.tf
+│   │   ├── backup-encryption.tf
+│   │   └── cross-region-replication.tf
+│   └── manifests/
+│       ├── velero/
+│       │   ├── velero-install.yaml
+│       │   ├── backup-storage-location.yaml
+│       │   ├── volume-snapshot-location.yaml
+│       │   └── backup-schedules.yaml
+│       └── external-snapshotter/
+│           ├── csi-snapshotter.yaml
+│           ├── snapshot-controller.yaml
+│           └── volume-snapshot-class.yaml
+├── disaster-recovery/
+│   ├── runbooks/
+│   │   ├── cluster-failure.md
+│   │   ├── etcd-corruption.md
+│   │   ├── node-failure.md
+│   │   ├── network-partition.md
+│   │   └── security-breach.md
+│   ├── automation/
+│   │   ├── failover-scripts/
+│   │   │   ├── cluster-failover.sh
+│   │   │   ├── dns-failover.sh
+│   │   │   └── storage-failover.sh
+│   │   ├── recovery-scripts/
+│   │   │   ├── cluster-recovery.sh
+│   │   │   ├── data-recovery.sh
+│   │   │   └── service-recovery.sh
+│   │   └── validation-scripts/
+│   │       ├── health-check.sh
+│   │       ├── data-integrity.sh
+│   │       └── service-validation.sh
+│   ├── testing/
+│   │   ├── chaos-engineering/
+│   │   │   ├── litmus-experiments/
+│   │   │   │   ├── pod-delete.yaml
+│   │   │   │   ├── node-drain.yaml
+│   │   │   │   ├── network-loss.yaml
+│   │   │   │   └── cpu-stress.yaml
+│   │   │   ├── chaos-mesh/
+│   │   │   │   ├── network-chaos.yaml
+│   │   │   │   ├── pod-chaos.yaml
+│   │   │   │   ├── io-chaos.yaml
+│   │   │   │   └── stress-chaos.yaml
+│   │   │   └── gremlin/
+│   │   │       ├── attack-configs/
+│   │   │       └── scenarios/
+│   │   └── dr-exercises/
+│   │       ├── quarterly-dr-test.md
+│   │       ├── monthly-backup-test.md
+│   │       ├── weekly-health-check.md
+│   │       └── daily-monitoring-check.md
+│   └── compliance/
+│       ├── rpo-rto-requirements.md
+│       ├── backup-compliance.md
+│       ├── security-compliance.md
+│       └── audit-requirements.md
+├── cost-optimization/
+│   ├── analysis/
+│   │   ├── cost-analysis.py
+│   │   ├── resource-utilization.py
+│   │   ├── rightsizing-recommendations.py
+│   │   └── waste-detection.py
+│   ├── policies/
+│   │   ├── cost-allocation-tags.yaml
+│   │   ├── budget-alerts.yaml
+│   │   ├── resource-limits.yaml
+│   │   └── cleanup-policies.yaml
+│   ├── automation/
+│   │   ├── spot-instance-automation/
+│   │   │   ├── spot-fleet-config.yaml
+│   │   │   ├── interruption-handler.yaml
+│   │   │   └── savings-tracker.py
+│   │   ├── scheduled-scaling/
+│   │   │   ├── business-hours-scaling.yaml
+│   │   │   ├── weekend-downscaling.yaml
+│   │   │   └── holiday-schedules.yaml
+│   │   └── resource-cleanup/
+│   │       ├── unused-resources.py
+│   │       ├── orphaned-volumes.py
+│   │       └── stale-snapshots.py
+│   └── reporting/
+│       ├── daily-cost-report.py
+│       ├── monthly-optimization-report.py
+│       ├── quarterly-trend-analysis.py
+│       └── dashboards/
+│           ├── cost-overview.json
+│           ├── resource-utilization.json
+│           └── savings-tracker.json
+├── compliance/
+│   ├── frameworks/
+│   │   ├── cis-benchmarks/
+│   │   │   ├── kubernetes-cis.yaml
+│   │   │   ├── aws-cis.yaml
+│   │   │   └── assessment-tools.sh
+│   │   ├── nist/
+│   │   │   ├── nist-800-53.yaml
+│   │   │   ├── control-mappings.yaml
+│   │   │   └── assessment-procedures.md
+│   │   ├── pci-dss/
+│   │   │   ├── pci-requirements.yaml
+│   │   │   ├── network-segmentation.yaml
+│   │   │   └── audit-procedures.md
+│   │   ├── sox/
+│   │   │   ├── sox-controls.yaml
+│   │   │   ├── change-management.yaml
+│   │   │   └── audit-trail.md
+│   │   └── gdpr/
+│   │       ├── data-protection.yaml
+│   │       ├── privacy-policies.yaml
+│   │       └── data-retention.md
+│   ├── scanning/
+│   │   ├── vulnerability-scanning/
+│   │   │   ├── trivy-config.yaml
+│   │   │   ├── clair-config.yaml
+│   │   │   ├── snyk-config.yaml
+│   │   │   └── scanning-policies.yaml
+│   │   ├── compliance-scanning/
+│   │   │   ├── inspec-profiles/
+│   │   │   ├── open-scap-profiles/
+│   │   │   └── custom-checks/
+│   │   └── security-scanning/
+│   │       ├── kube-bench.yaml
+│   │       ├── kube-hunter.yaml
+│   │       ├── polaris-config.yaml
+│   │       └── falco-rules.yaml
+│   ├── reporting/
+│   │   ├── compliance-dashboard.json
+│   │   ├── vulnerability-report.py
+│   │   ├── audit-report-generator.py
+│   │   └── risk-assessment.py
+│   └── remediation/
+│       ├── automated-fixes/
+│       │   ├── security-patches.sh
+│       │   ├── config-drift-fix.sh
+│       │   └── policy-enforcement.sh
+│       ├── manual-procedures/
+│       │   ├── critical-vulnerabilities.md
+│       │   ├── compliance-violations.md
+│       │   └── security-incidents.md
+│       └── validation/
+│           ├── fix-validation.sh
+│           ├── compliance-check.sh
+│           └── security-verification.sh
+├── secrets-management/
+│   ├── external-secrets/
+│   │   ├── secret-stores/
+│   │   │   ├── aws-secrets-manager.yaml
+│   │   │   ├── aws-parameter-store.yaml
+│   │   │   ├── hashicorp-vault.yaml
+│   │   │   └── azure-key-vault.yaml
+│   │   ├── external-secrets/
+│   │   │   ├── database-secrets.yaml
+│   │   │   ├── api-keys.yaml
+│   │   │   ├── certificates.yaml
+│   │   │   └── oauth-tokens.yaml
+│   │   └── cluster-secret-store.yaml
+│   ├── sealed-secrets/
+│   │   ├── sealed-secrets-controller.yaml
+│   │   ├── sealed-secrets/
+│   │   │   ├── dev-secrets.yaml
+│   │   │   ├── staging-secrets.yaml
+│   │   │   └── prod-secrets.yaml
+│   │   └── bitnami-labs-sealed-secrets.key
+│   ├── vault/
+│   │   ├── vault-operator/
+│   │   │   ├── vault-operator.yaml
+│   │   │   ├── vault-cluster.yaml
+│   │   │   └── vault-policies.hcl
+│   │   ├── auth-methods/
+│   │   │   ├── kubernetes-auth.hcl
+│   │   │   ├── aws-auth.hcl
+│   │   │   └── jwt-auth.hcl
+│   │   ├── secret-engines/
+│   │   │   ├── kv-secrets.hcl
+│   │   │   ├── pki-engine.hcl
+│   │   │   ├── database-engine.hcl
+│   │   │   └── aws-engine.hcl
+│   │   └── policies/
+│   │       ├── app-policy.hcl
+│   │       ├── admin-policy.hcl
+│   │       └── readonly-policy.hcl
+│   └── security/
+│       ├── secret-scanning/
+│       │   ├── gitleaks-config.toml
+│       │   ├── truffleHog-config.yaml
+│       │   └── detect-secrets.yaml
+│       ├── rotation/
+│       │   ├── automatic-rotation.yaml
+│       │   ├── rotation-schedule.cron
+│       │   └── rotation-validation.sh
+│       └── encryption/
+│           ├── encryption-at-rest.yaml
+│           ├── encryption-in-transit.yaml
+│           └── key-management.yaml
+└── .terraform-version-scp.json
+│   ├── kubernetes/
+│   │   ├── kubeconfig-template.yaml
+│   │   ├── cluster-config.yaml
+│   │   └── admission-config.yaml
+│   └── monitoring/
+│       ├── prometheus-rules/
+│       │   ├── kubernetes.yaml
+│       │   ├── node-exporter.yaml
+│       │   ├── kube-state-metrics.yaml
+│       │   └── custom-rules.yaml
+│       ├── grafana-dashboards/
+│       │   ├── kubernetes-cluster.json
+│       │   ├── kubernetes-nodes.json
+│       │   ├── kubernetes-pods.json
+│       │   └── application-overview.json
+│       └── alertmanager-config/
+│           ├── routing-rules.yaml
+│           ├── inhibit-rules.yaml
+│           └── templates.yaml
+├── examples/
+│   ├── minimal/
+│   │   ├── README.md
+│   │   ├── terragrunt.hcl
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   ├── complete/
+│   │   ├── README.md
+│   │   ├── terragrunt.hcl
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   ├── multi-region/
+│   │   ├── README.md
+│   │   ├── us-east-1/
+│   │   │   └── terragrunt.hcl
+│   │   ├── eu-west-1/
+│   │   │   └── terragrunt.hcl
+│   │   └── ap-southeast-1/
+│   │       └── terragrunt.hcl
+│   └── security-hardened/
+│       ├── README.md
+│       ├── terragrunt.hcl
+│       ├── security-policies.yaml
+│       └── compliance

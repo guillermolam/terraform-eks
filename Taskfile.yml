@@ -1,0 +1,343 @@
+# Taskfile.yml
+# Modern task runner for Terraform EKS Zero-Trust project
+# https://taskfile.dev/
+
+version: '3'
+
+vars:
+  PROJECT_NAME: terraform-eks-zero-trust
+  AWS_REGION: eu-west-1
+  TF_VERSION: 1.12.0
+  TERRAFORM_DOCS_VERSION: 0.16.0
+  CHECKOV_VERSION: 3.2.0
+  TRIVY_VERSION: 0.50.0
+
+env:
+  AWS_DEFAULT_REGION: "{{.AWS_REGION}}"
+  TF_PLUGIN_CACHE_DIR: "{{.HOME}}/.terraform.d/plugin-cache"
+  TF_CLI_CONFIG_FILE: "{{.PWD}}/.terraformrc"
+
+includes:
+  terraform:
+    taskfile: ./.tasks/terraform.yml
+    dir: .
+  testing:
+    taskfile: ./.tasks/testing.yml
+    dir: .
+  security:
+    taskfile: ./.tasks/security.yml
+    dir: .
+  docs:
+    taskfile: ./.tasks/docs.yml
+    dir: .
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  # Setup and initialization tasks
+  setup:
+    desc: Initial project setup
+    deps: [check-requirements]
+    cmds:
+      - task: install-tools
+      - task: setup-pre-commit
+      - task: terraform:init-all
+      - echo "Project setup complete!"
+
+  check-requirements:
+    desc: Check if required tools are installed
+    cmds:
+      - |
+        echo "Checking requirements..."
+        command -v terraform >/dev/null 2>&1 || { echo "ERROR: terraform is required"; exit 1; }
+        command -v aws >/dev/null 2>&1 || { echo "ERROR: aws-cli is required"; exit 1; }
+        command -v kubectl >/dev/null 2>&1 || { echo "ERROR: kubectl is required"; exit 1; }
+        command -v helm >/dev/null 2>&1 || { echo "ERROR: helm is required"; exit 1; }
+        command -v pre-commit >/dev/null 2>&1 || { echo "ERROR: pre-commit is required"; exit 1; }
+        echo "All requirements satisfied"
+
+  install-tools:
+    desc: Install additional development tools
+    cmds:
+      - |
+        echo "Installing development tools..."
+        # Install terraform-docs
+        if ! command -v terraform-docs >/dev/null 2>&1; then
+          curl -sSLo ./terraform-docs.tar.gz https://terraform-docs.io/dl/v{{.TERRAFORM_DOCS_VERSION}}/terraform-docs-v{{.TERRAFORM_DOCS_VERSION}}-$(uname)-amd64.tar.gz
+          tar -xzf terraform-docs.tar.gz
+          chmod +x terraform-docs
+          sudo mv terraform-docs /usr/local/bin/
+          rm terraform-docs.tar.gz
+        fi
+        
+        # Install checkov
+        pip3 install checkov=={{.CHECKOV_VERSION}}
+        
+        # Install trivy
+        if ! command -v trivy >/dev/null 2>&1; then
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v{{.TRIVY_VERSION}}
+        fi
+        
+        echo "Tools installed successfully"
+
+  setup-pre-commit:
+    desc: Setup pre-commit hooks
+    cmds:
+      - pre-commit install
+      - pre-commit install --hook-type commit-msg
+      - echo "Pre-commit hooks installed"
+
+  # Development workflow tasks
+  dev:
+    desc: Start development environment
+    deps: [setup]
+    cmds:
+      - task: terraform:validate-all
+      - task: security:scan-code
+      - echo "Development environment ready!"
+
+  validate:
+    desc: Validate all configurations
+    cmds:
+      - task: terraform:validate-all
+      - task: terraform:fmt-check
+      - task: security:scan-all
+      - task: docs:validate
+      - echo "All validations passed"
+
+  test:
+    desc: Run all tests
+    cmds:
+      - task: testing:unit
+      - task: testing:integration
+      - task: testing:security
+      - task: testing:compliance
+
+  # Stack management tasks
+  plan:
+    desc: Plan deployment for specific environment
+    vars:
+      ENV: '{{.ENV | default "dev"}}'
+    cmds:
+      - task: terraform:plan
+        vars: {ENV: "{{.ENV}}"}
+
+  apply:
+    desc: Apply deployment for specific environment
+    vars:
+      ENV: '{{.ENV | default "dev"}}'
+    cmds:
+      - task: terraform:apply
+        vars: {ENV: "{{.ENV}}"}
+
+  destroy:
+    desc: Destroy deployment for specific environment
+    vars:
+      ENV: '{{.ENV | default "dev"}}'
+    cmds:
+      - task: terraform:destroy
+        vars: {ENV: "{{.ENV}}"}
+
+  # Utility tasks
+  clean:
+    desc: Clean temporary files and caches
+    cmds:
+      - |
+        echo "Cleaning up..."
+        find . -name ".terraform" -type d -exec rm -rf {} + 2>/dev/null || true
+        find . -name "*.tfplan" -delete 2>/dev/null || true
+        find . -name "*.tfstate.backup" -delete 2>/dev/null || true
+        find . -name ".terraform.lock.hcl" -delete 2>/dev/null || true
+        rm -rf .task/ 2>/dev/null || true
+        echo "Cleanup complete"
+
+  refresh-docs:
+    desc: Refresh all documentation
+    cmds:
+      - task: docs:generate-all
+      - task: docs:validate
+      - echo "Documentation refreshed"
+
+  security-scan:
+    desc: Run comprehensive security scan
+    cmds:
+      - task: security:scan-all
+      - task: security:vulnerability-scan
+      - task: security:compliance-check
+
+  cost-estimate:
+    desc: Generate cost estimation
+    vars:
+      ENV: '{{.ENV | default "dev"}}'
+    cmds:
+      - |
+        echo "Generating cost estimate for {{.ENV}}..."
+        if command -v infracost >/dev/null 2>&1; then
+          infracost breakdown --path ./environments/{{.ENV}} --format table
+        else
+          echo "WARNING: infracost not installed. Install from https://www.infracost.io/docs/"
+        fi
+
+  # CI/CD helpers
+  ci-setup:
+    desc: Setup for CI environment
+    cmds:
+      - task: check-requirements
+      - task: terraform:init-all
+      - echo "CI environment ready"
+
+  ci-validate:
+    desc: CI validation pipeline
+    cmds:
+      - task: terraform:validate-all
+      - task: terraform:fmt-check
+      - task: security:scan-code
+      - task: testing:unit
+
+  ci-plan:
+    desc: CI plan pipeline
+    vars:
+      ENV: '{{.ENV | default "dev"}}'
+    cmds:
+      - task: terraform:plan
+        vars: {ENV: "{{.ENV}}"}
+
+  ci-apply:
+    desc: CI apply pipeline
+    vars:
+      ENV: '{{.ENV | default "dev"}}'
+    cmds:
+      - task: terraform:apply
+        vars: {ENV: "{{.ENV}}"}
+
+  # Debugging and troubleshooting
+  debug:
+    desc: Debug current state
+    vars:
+      ENV: '{{.ENV | default "dev"}}'
+    cmds:
+      - |
+        echo "Debug information for {{.ENV}}:"
+        echo "Terraform version: $(terraform version)"
+        echo "AWS CLI version: $(aws --version)"
+        echo "Current AWS profile: ${AWS_PROFILE:-default}"
+        echo "Current region: {{.AWS_REGION}}"
+        echo "Working directory: $(pwd)"
+        if [ -f "./environments/{{.ENV}}/terraform.tfstate" ]; then
+          echo "State file exists: ./environments/{{.ENV}}/terraform.tfstate"
+        else
+          echo "No local state file found"
+        fi
+
+  graph:
+    desc: Generate dependency graph
+    vars:
+      ENV: '{{.ENV | default "dev"}}'
+    cmds:
+      - |
+        echo "Generating dependency graph for {{.ENV}}..."
+        cd environments/{{.ENV}}
+        terraform graph | dot -Tsvg > ../../docs/architecture/{{.ENV}}-dependency-graph.svg
+        echo "Graph saved to docs/architecture/{{.ENV}}-dependency-graph.svg"
+
+  # Maintenance tasks
+  update-modules:
+    desc: Update all module versions
+    cmds:
+      - |
+        echo "Updating module versions..."
+        find . -name "versions.tf" -exec terraform init -upgrade {} \;
+        echo "Modules updated"
+
+  backup-state:
+    desc: Backup Terraform state files
+    vars:
+      ENV: '{{.ENV | default "dev"}}'
+    cmds:
+      - |
+        echo "Backing up state for {{.ENV}}..."
+        BACKUP_DIR="backups/$(date +%Y%m%d_%H%M%S)"
+        mkdir -p $BACKUP_DIR
+        if aws s3 ls s3://terraform-state-{{.PROJECT_NAME}}-{{.ENV}} >/dev/null 2>&1; then
+          aws s3 sync s3://terraform-state-{{.PROJECT_NAME}}-{{.ENV}} $BACKUP_DIR/{{.ENV}}/
+          echo "State backed up to $BACKUP_DIR"
+        else
+          echo "WARNING: Remote state bucket not found"
+        fi
+
+  # Help and information
+  help:
+    desc: Show detailed help information
+    cmds:
+      - |
+        echo "Terraform EKS Zero-Trust Project"
+        echo "=================================="
+        echo ""
+        echo "Common workflows:"
+        echo "  task setup           - Initial project setup"
+        echo "  task dev             - Start development environment"
+        echo "  task validate        - Validate all configurations"
+        echo "  task test            - Run all tests"
+        echo "  task plan ENV=prod   - Plan production deployment"
+        echo "  task apply ENV=dev   - Apply development deployment"
+        echo ""
+        echo "For detailed task list: task --list"
+        echo "For specific help: task <task-name> --help"
+
+  version:
+    desc: Show version information
+    cmds:
+      - |
+        echo "Project: {{.PROJECT_NAME}}"
+        echo "Terraform: $(terraform version | head -n1)"
+        echo "AWS CLI: $(aws --version)"
+        echo "Kubectl: $(kubectl version --client --short 2>/dev/null || echo 'Not available')"
+        echo "Helm: $(helm version --short 2>/dev/null || echo 'Not available')"
+        echo "Task: $(task --version)"
+
+  # Quick environment shortcuts
+  dev-plan:
+    desc: Plan development environment
+    cmds:
+      - task: plan
+        vars: {ENV: "dev"}
+
+  dev-apply:
+    desc: Apply development environment
+    cmds:
+      - task: apply
+        vars: {ENV: "dev"}
+
+  staging-plan:
+    desc: Plan staging environment
+    cmds:
+      - task: plan
+        vars: {ENV: "staging"}
+
+  staging-apply:
+    desc: Apply staging environment
+    cmds:
+      - task: apply
+        vars: {ENV: "staging"}
+
+  prod-plan:
+    desc: Plan production environment
+    cmds:
+      - task: plan
+        vars: {ENV: "prod"}
+
+  prod-apply:
+    desc: Apply production environment (with confirmation)
+    cmds:
+      - |
+        echo "WARNING: You are about to apply changes to PRODUCTION!"
+        read -p "Are you sure? (yes/no): " confirm
+        if [ "$confirm" = "yes" ]; then
+          task apply ENV=prod
+        else
+          echo "ERROR: Production deployment cancelled"
+          exit 1
+        fi

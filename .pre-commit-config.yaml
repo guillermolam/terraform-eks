@@ -1,0 +1,316 @@
+# .pre-commit-config.yaml
+# Comprehensive pre-commit hooks for Terraform EKS Zero-Trust project
+# https://pre-commit.com/
+
+repos:
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-json
+      - id: check-toml
+      - id: check-xml
+      - id: check-added-large-files
+        args: [--maxkb=500]
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      - id: detect-private-key
+      - id: fix-byte-order-marker
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  # Terraform specific hooks
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.88.4
+    hooks:
+      # Terraform fmt
+      - id: terraform_fmt
+        args:
+          - --args=-recursive
+          - --args=-diff
+
+      # Terraform validate
+      - id: terraform_validate
+        args:
+          - --args=-json
+          - --hook-config=--retry-once-with-cleanup=true
+
+      # Terraform docs
+      - id: terraform_docs
+        args:
+          - --hook-config=--path-to-file=README.md
+          - --hook-config=--add-to-existing-file=true
+          - --hook-config=--create-file-if-not-exist=true
+          - --args=--config=.terraform-docs.yml
+
+      # Terraform tflint
+      - id: terraform_tflint
+        args:
+          - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
+          - --args=--module
+          - --args=--color
+        exclude: \.terraform/.*$
+
+      # Terraform tfsec (deprecated, but still useful)
+      - id: terraform_tfsec
+        args:
+          - --args=--config-file=__GIT_WORKING_DIR__/.tfsec.yml
+          - --args=--no-color
+          - --args=--format=lovely
+        exclude: \.terraform/.*$
+
+      # Terraform checkov
+      - id: terraform_checkov
+        args:
+          - --args=--config-file=__GIT_WORKING_DIR__/.checkov.yaml
+          - --args=--quiet
+          - --args=--compact
+        exclude: \.terraform/.*$
+
+      # Terraform providers lock
+      - id: terraform_providers_lock
+        args:
+          - --args=-platform=darwin_amd64
+          - --args=-platform=darwin_arm64
+          - --args=-platform=linux_amd64
+          - --args=-platform=linux_arm64
+          - --args=-platform=windows_amd64
+
+      # Terraform wrapper script for specific checks
+      - id: terraform_wrapper_module_for_each
+        args:
+          - --args=--hook-config=--skip-provider-call=true
+
+  # Additional Terraform security scanning
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: |
+          (?x)^(
+            .*\.terraform/.*|
+            .*\.tfstate.*|
+            .*\.tfplan.*|
+            lock\.json|
+            package-lock\.json
+          )$
+
+  # YAML linting
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: [-c=.yamllint.yml]
+        types: [yaml]
+
+  # Shell script linting
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.6
+    hooks:
+      - id: shellcheck
+        args: [--severity=warning]
+        types: [shell]
+
+  # Dockerfile linting
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        args: [--config, .hadolint.yaml]
+
+  # Markdown linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.39.0
+    hooks:
+      - id: markdownlint
+        args: [--config, .markdownlint.yml]
+
+  # JSON formatting
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        types_or: [json, yaml, markdown]
+        args: [--config, .prettierrc.yml]
+
+  # Python code quality (for scripts)
+  - repo: https://github.com/psf/black
+    rev: 24.2.0
+    hooks:
+      - id: black
+        language_version: python3
+        types: [python]
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        args: [--config, .flake8]
+        types: [python]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: [--profile, black]
+        types: [python]
+
+  # Go code quality (for tests and tools)
+  - repo: https://github.com/dnephin/pre-commit-golang
+    rev: v0.5.1
+    hooks:
+      - id: go-fmt
+      - id: go-vet-mod
+      - id: go-mod-tidy
+      - id: golangci-lint
+
+  # Security scanning with trivy
+  - repo: local
+    hooks:
+      - id: trivy-config
+        name: Trivy Config Scanner
+        entry: trivy
+        language: system
+        args:
+          - config
+          - --exit-code=1
+          - --severity=HIGH,CRITICAL
+          - --format=table
+          - .
+        pass_filenames: false
+        always_run: true
+
+  # Custom hooks for project-specific checks
+  - repo: local
+    hooks:
+      # Check for TODO/FIXME comments in production code
+      - id: check-todos
+        name: Check for TODO/FIXME in production code
+        entry: bash -c 'if grep -r "TODO\|FIXME" --include="*.tf" --include="*.hcl" .; then echo "ERROR: TODO/FIXME found in production code"; exit 1; fi'
+        language: system
+        pass_filenames: false
+        always_run: true
+        exclude: |
+          (?x)^(
+            examples/.*|
+            docs/.*|
+            .*_test\..*
+          )$
+
+      # Validate Terraform native test files
+      - id: terraform-test-validate
+        name: Validate Terraform test files
+        entry: bash -c 'find . -name "*.tftest.hcl" -exec terraform test -no-run {} \;'
+        language: system
+        files: \.tftest\.hcl$
+        pass_filenames: false
+
+      # Check for sensitive data patterns
+      - id: check-sensitive-data
+        name: Check for sensitive data patterns
+        entry: bash -c 'if grep -r -i "password\|secret\|key\|token" --include="*.tf" --include="*.hcl" . | grep -v "variable\|output\|data\|resource"; then echo "ERROR: Potential sensitive data found"; exit 1; fi'
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      # Validate stack dependencies
+      - id: validate-stack-deps
+        name: Validate stack dependencies
+        entry: bash -c 'python3 scripts/validate-stack-dependencies.py'
+        language: system
+        files: \.tfstack\.hcl$
+        pass_filenames: false
+
+      # Check module versions
+      - id: check-module-versions
+        name: Check module versions are pinned
+        entry: bash -c 'if grep -r "source.*git::" --include="*.tf" . | grep -v "?ref="; then echo "ERROR: Git modules must be pinned to specific versions"; exit 1; fi'
+        language: system
+        files: \.tf$
+        pass_filenames: false
+
+      # Validate AWS resource naming
+      - id: validate-aws-naming
+        name: Validate AWS resource naming convention
+        entry: bash -c 'python3 scripts/validate-aws-naming.py'
+        language: system
+        files: \.tf$
+        pass_filenames: false
+
+      # Check for deprecated Terraform syntax
+      - id: check-deprecated-syntax
+        name: Check for deprecated Terraform syntax
+        entry: bash -c 'if grep -r "depends_on.*\[\]" --include="*.tf" .; then echo "ERROR: Empty depends_on blocks should be removed"; exit 1; fi'
+        language: system
+        files: \.tf$
+        pass_filenames: false
+
+      # Validate Kubernetes manifests
+      - id: validate-k8s-manifests
+        name: Validate Kubernetes manifests
+        entry: bash -c 'find manifests/ -name "*.yaml" -exec kubectl --dry-run=client apply -f {} \; 2>/dev/null || echo "WARNING: Some Kubernetes manifests failed validation"'
+        language: system
+        files: ^manifests/.*\.yaml$
+        pass_filenames: false
+
+      # Check for proper tagging
+      - id: check-resource-tags
+        name: Check AWS resources have required tags
+        entry: bash -c 'python3 scripts/check-resource-tags.py'
+        language: system
+        files: \.tf$
+        pass_filenames: false
+
+      # Validate cost allocation tags
+      - id: validate-cost-tags
+        name: Validate cost allocation tags
+        entry: bash -c 'python3 scripts/validate-cost-tags.py'
+        language: system
+        files: \.tf$
+        pass_filenames: false
+
+# Default language version configuration
+default_language_version:
+  python: python3.11
+  node: '18.19.0'
+
+# Global configuration
+default_stages: [commit, push]
+fail_fast: false
+minimum_pre_commit_version: 3.5.0
+
+# Repository-wide excludes
+exclude: |
+  (?x)^(
+    \.terraform/.*|
+    .*\.tfstate.*|
+    .*\.tfplan.*|
+    \.git/.*|
+    node_modules/.*|
+    \.vscode/.*|
+    \.idea/.*|
+    \.task/.*|
+    __pycache__/.*
+  )$
+
+# CI skip configuration
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: [terraform_providers_lock, trivy-config]
+  submodules: false
