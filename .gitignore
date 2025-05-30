@@ -1,4 +1,6 @@
 # gitignore for terraform 1.12+
+.venv
+.venv/*
 # Local .terraform directories
 .terraform/
 # Local .terraform.lock.hcl files
@@ -39,4 +41,22 @@ terraform.tfstate.d/
 # Ignore Terraform Cloud/Enterprise override files
 override.tf.json
 # Ignore Terraform Cloud/Enterprise variable files
-*.tfvars.json                   
+*.tfvars.json
+.venv/**/
+# Ignore Python virtual environment directories
+# Ignore Python bytecode files
+*.pyc
+# Ignore Python cache directories
+__pycache__/
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+# Ignore Jupyter Notebook metadata
+.ipynb
+# Ignore Jupyter Notebook output files
+*.ipynb
+# Ignore Jupyter Notebook configuration files
+.jupyter/
+# Ignore Jupyter Notebook extensions
+.jupyterlab/
+# Ignore Jupyter Notebook kernels
+.kernelspec/
