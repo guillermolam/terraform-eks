@@ -1,11 +1,7 @@
 # gitignore for terraform 1.12+
-<<<<<<< HEAD
-.trunk
-=======
 # ignore everything in .trunk except the trunk.yaml
 .trunk/*
 !.trunk/trunk.yaml
->>>>>>> 57954ff9ed3e2bd2063a4d901db224fd936b4aa1
 node_modules/
 .venv
 ## add all .venv recursively
