@@ -2,7 +2,7 @@
 # Modern task runner for Terraform EKS Zero-Trust project
 # https://taskfile.dev/
 
-version: "3"
+version: '3'
 
 vars:
   PROJECT_NAME: terraform-eks-zero-trust
@@ -43,7 +43,7 @@ tasks:
     deps: [check-requirements]
     cmds:
       - task: install-tools
-      - task: setup-pre-commit
+      - task: setup-trunk
       - task: terraform:init-all
       - echo "Project setup complete!"
 
@@ -72,23 +72,22 @@ tasks:
           sudo mv terraform-docs /usr/local/bin/
           rm terraform-docs.tar.gz
         fi
-
+        
         # Install checkov
         pip3 install checkov=={{.CHECKOV_VERSION}}
-
+        
         # Install trivy
         if ! command -v trivy >/dev/null 2>&1; then
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v{{.TRIVY_VERSION}}
         fi
-
+        
         echo "Tools installed successfully"
 
-  setup-pre-commit:
-    desc: Setup pre-commit hooks
+  setup-trunk:
+    desc: Setup Trunk for code quality
     cmds:
-      - pre-commit install
-      - pre-commit install --hook-type commit-msg
-      - echo "Pre-commit hooks installed"
+      - trunk install
+      - echo "Trunk hooks installed"
 
   # Development workflow tasks
   dev:
@@ -96,7 +95,7 @@ tasks:
     deps: [setup]
     cmds:
       - task: terraform:validate-all
-      - task: security:scan-code
+      - trunk check
       - echo "Development environment ready!"
 
   validate:
@@ -104,9 +103,29 @@ tasks:
     cmds:
       - task: terraform:validate-all
       - task: terraform:fmt-check
-      - task: security:scan-all
+      - trunk check
       - task: docs:validate
       - echo "All validations passed"
+
+  format:
+    desc: Format all code
+    cmds:
+      - trunk fmt
+      - task: terraform:fmt
+      - echo "All code formatted"
+
+  lint:
+    desc: Run linters without auto-fixing
+    cmds:
+      - trunk check
+      - echo "Linting completed"
+
+  fix:
+    desc: Auto-fix all fixable issues
+    cmds:
+      - trunk check --fix
+      - task: terraform:fmt
+      - echo "Auto-fixes applied"
 
   test:
     desc: Run all tests
@@ -123,7 +142,7 @@ tasks:
       ENV: '{{.ENV | default "dev"}}'
     cmds:
       - task: terraform:plan
-        vars: { ENV: "{{.ENV}}" }
+        vars: {ENV: "{{.ENV}}"}
 
   apply:
     desc: Apply deployment for specific environment
@@ -131,7 +150,7 @@ tasks:
       ENV: '{{.ENV | default "dev"}}'
     cmds:
       - task: terraform:apply
-        vars: { ENV: "{{.ENV}}" }
+        vars: {ENV: "{{.ENV}}"}
 
   destroy:
     desc: Destroy deployment for specific environment
@@ -139,7 +158,7 @@ tasks:
       ENV: '{{.ENV | default "dev"}}'
     cmds:
       - task: terraform:destroy
-        vars: { ENV: "{{.ENV}}" }
+        vars: {ENV: "{{.ENV}}"}
 
   # Utility tasks
   clean:
@@ -164,9 +183,8 @@ tasks:
   security-scan:
     desc: Run comprehensive security scan
     cmds:
-      - task: security:scan-all
-      - task: security:vulnerability-scan
-      - task: security:compliance-check
+      - trunk check --filter=checkov,trivy,tfsec,bandit,semgrep,gitleaks,trufflehog
+      - echo "Security scan completed"
 
   cost-estimate:
     desc: Generate cost estimation
@@ -194,7 +212,7 @@ tasks:
     cmds:
       - task: terraform:validate-all
       - task: terraform:fmt-check
-      - task: security:scan-code
+      - trunk check
       - task: testing:unit
 
   ci-plan:
@@ -203,7 +221,7 @@ tasks:
       ENV: '{{.ENV | default "dev"}}'
     cmds:
       - task: terraform:plan
-        vars: { ENV: "{{.ENV}}" }
+        vars: {ENV: "{{.ENV}}"}
 
   ci-apply:
     desc: CI apply pipeline
@@ -211,7 +229,7 @@ tasks:
       ENV: '{{.ENV | default "dev"}}'
     cmds:
       - task: terraform:apply
-        vars: { ENV: "{{.ENV}}" }
+        vars: {ENV: "{{.ENV}}"}
 
   # Debugging and troubleshooting
   debug:
@@ -252,6 +270,12 @@ tasks:
         find . -name "versions.tf" -exec terraform init -upgrade {} \;
         echo "Modules updated"
 
+  update-trunk:
+    desc: Update Trunk and all tools
+    cmds:
+      - trunk upgrade
+      - echo "Trunk and tools updated"
+
   backup-state:
     desc: Backup Terraform state files
     vars:
@@ -277,12 +301,22 @@ tasks:
         echo "=================================="
         echo ""
         echo "Common workflows:"
-        echo "  task setup           - Initial project setup"
+        echo "  task setup           - Initial project setup with Trunk"
         echo "  task dev             - Start development environment"
+        echo "  task format          - Format all code (auto-fix)"
+        echo "  task lint            - Run linters without fixing"
+        echo "  task fix             - Auto-fix all fixable issues"
         echo "  task validate        - Validate all configurations"
         echo "  task test            - Run all tests"
+        echo "  task security-scan   - Run security scans"
         echo "  task plan ENV=prod   - Plan production deployment"
         echo "  task apply ENV=dev   - Apply development deployment"
+        echo ""
+        echo "Code quality:"
+        echo "  task format          - Auto-format all files"
+        echo "  task lint            - Check code quality"
+        echo "  task security-scan   - Security scanning"
+        echo "  task update-trunk    - Update Trunk and tools"
         echo ""
         echo "For detailed task list: task --list"
         echo "For specific help: task <task-name> --help"
@@ -303,31 +337,31 @@ tasks:
     desc: Plan development environment
     cmds:
       - task: plan
-        vars: { ENV: "dev" }
+        vars: {ENV: "dev"}
 
   dev-apply:
     desc: Apply development environment
     cmds:
       - task: apply
-        vars: { ENV: "dev" }
+        vars: {ENV: "dev"}
 
   staging-plan:
     desc: Plan staging environment
     cmds:
       - task: plan
-        vars: { ENV: "staging" }
+        vars: {ENV: "staging"}
 
   staging-apply:
     desc: Apply staging environment
     cmds:
       - task: apply
-        vars: { ENV: "staging" }
+        vars: {ENV: "staging"}
 
   prod-plan:
     desc: Plan production environment
     cmds:
       - task: plan
-        vars: { ENV: "prod" }
+        vars: {ENV: "prod"}
 
   prod-apply:
     desc: Apply production environment (with confirmation)

@@ -1,4 +1,7 @@
-version: 3
+# .tasks/docs.yml
+# Documentation tasks for EKS Zero-Trust project
+
+version: '3'
 
 vars:
   TERRAFORM_DOCS_CONFIG: .terraform-docs.yml
@@ -25,7 +28,7 @@ tasks:
             echo "Generating docs for $module_dir"
             terraform-docs --config {{.TERRAFORM_DOCS_CONFIG}} "$module_dir"
           done
-
+          
           # Generate docs for stacks
           find stacks/ -name "*.tfstack.hcl" -exec dirname {} \; | while read stack_dir; do
             echo "Generating docs for $stack_dir"
@@ -42,15 +45,15 @@ tasks:
       - |
         echo "Generating API documentation..."
         mkdir -p {{.DOCS_OUTPUT_DIR}}/api
-
+        
         # Generate Terraform provider documentation
         echo "Generating provider API docs..."
         python3 scripts/docs/generate-provider-docs.py
-
+        
         # Generate AWS API mappings
         echo "Generating AWS API mappings..."
         python3 scripts/docs/generate-aws-api-docs.py
-
+        
         echo "API documentation generated"
 
   generate-architecture-docs:
@@ -59,7 +62,7 @@ tasks:
       - |
         echo "Generating architecture documentation..."
         mkdir -p {{.DOCS_OUTPUT_DIR}}/architecture
-
+        
         # Generate network diagrams
         if command -v terraform >/dev/null 2>&1 && command -v dot >/dev/null 2>&1; then
           echo "Generating network diagrams..."
@@ -72,15 +75,15 @@ tasks:
             fi
           done
         fi
-
+        
         # Generate component diagrams
         echo "Generating component diagrams..."
         python3 scripts/docs/generate-component-diagrams.py
-
+        
         # Generate security architecture
         echo "Generating security architecture..."
         python3 scripts/docs/generate-security-architecture.py
-
+        
         echo "Architecture documentation generated"
 
   generate-runbooks:
@@ -89,19 +92,19 @@ tasks:
       - |
         echo "Generating operational runbooks..."
         mkdir -p {{.DOCS_OUTPUT_DIR}}/runbooks
-
+        
         # Generate deployment runbooks
         echo "Generating deployment runbooks..."
         python3 scripts/docs/generate-deployment-runbooks.py
-
+        
         # Generate troubleshooting guides
         echo "Generating troubleshooting guides..."
         python3 scripts/docs/generate-troubleshooting-guides.py
-
+        
         # Generate incident response procedures
         echo "Generating incident response procedures..."
         python3 scripts/docs/generate-incident-response.py
-
+        
         echo "Operational runbooks generated"
 
   validate:
@@ -109,22 +112,13 @@ tasks:
     cmds:
       - |
         echo "Validating documentation..."
-        # Check for broken links
-        if command -v markdown-link-check >/dev/null 2>&1; then
-          echo "Checking for broken links..."
-          find docs/ -name "*.md" -exec markdown-link-check {} \;
-        fi
-
-        # Validate markdown syntax
-        if command -v markdownlint >/dev/null 2>&1; then
-          echo "Validating markdown syntax..."
-          markdownlint docs/ --config .markdownlint.yml
-        fi
-
+        # Use Trunk for markdown validation and formatting
+        trunk check --filter=markdownlint,prettier docs/
+        
         # Check documentation completeness
         echo "Checking documentation completeness..."
         python3 scripts/docs/validate-completeness.py
-
+        
         echo "Documentation validation completed"
 
   lint:
@@ -132,14 +126,8 @@ tasks:
     cmds:
       - |
         echo "Linting documentation..."
-        if command -v markdownlint >/dev/null 2>&1; then
-          markdownlint docs/ --config .markdownlint.yml --fix
-        fi
-
-        if command -v prettier >/dev/null 2>&1; then
-          prettier --write "docs/**/*.md"
-        fi
-
+        trunk fmt docs/
+        trunk check --filter=markdownlint,prettier,alex docs/
         echo "Documentation linting completed"
 
   serve:
@@ -207,13 +195,13 @@ tasks:
         echo "Updating project README..."
         # Generate module table
         python3 scripts/docs/generate-module-table.py > docs/generated/module-table.md
-
+        
         # Generate stack table
         python3 scripts/docs/generate-stack-table.py > docs/generated/stack-table.md
-
+        
         # Update main README with generated content
         python3 scripts/docs/update-readme.py
-
+        
         echo "README updated"
 
   changelog:
@@ -240,19 +228,19 @@ tasks:
         TOTAL_MODULES=$(find modules/ -name "main.tf" | wc -l)
         DOCUMENTED_MODULES=$(find modules/ -name "README.md" | wc -l)
         DOC_COVERAGE=$((DOCUMENTED_MODULES * 100 / TOTAL_MODULES))
-
+        
         echo "Documentation metrics:"
         echo "  Total modules: $TOTAL_MODULES"
         echo "  Documented modules: $DOCUMENTED_MODULES"
         echo "  Documentation coverage: $DOC_COVERAGE%"
-
+        
         # Count total documentation size
         TOTAL_DOCS=$(find docs/ -name "*.md" | wc -l)
         TOTAL_WORDS=$(find docs/ -name "*.md" -exec wc -w {} \; | awk '{sum += $1} END {print sum}')
-
+        
         echo "  Total documentation files: $TOTAL_DOCS"
         echo "  Total words: $TOTAL_WORDS"
-
+        
         # Save metrics
         cat > docs/generated/metrics.json << EOF
         {
@@ -268,7 +256,7 @@ tasks:
           "generated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
         }
         EOF
-
+        
         echo "Documentation metrics saved to docs/generated/metrics.json"
 
   clean:

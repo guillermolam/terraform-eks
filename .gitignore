@@ -2,6 +2,11 @@
 # ignore everything in .trunk except the trunk.yaml
 .trunk/*
 !.trunk/trunk.yaml
+!.trunk/configs/
+!.trunk/configs/*.yamllint.yaml
+!.trunk/configs/*.shellcheckrc
+!.trunk/configs/*.markdownlint.yaml
+
 node_modules/
 .venv
 ## add all .venv recursively
