@@ -3,6 +3,7 @@ version: 0.1
 cli:
   version: 1.24.0
 repo:
+  
 
 plugins:
   sources:
@@ -12,8 +13,8 @@ plugins:
 
 runtimes:
   enabled:
-    - go@1.22.0
-    - node@22.16.0
+    - go@>=1.22.0
+    - node@>=22.16.0
     - python@>=3.12.0
   definitions:
     - type: python
@@ -75,6 +76,24 @@ actions:
     - trunk-single-player-auto-on-upgrade
     - trunk-single-player-auto-upgrade
     - trunk-cache-prune
+  definitions:
+    # On every git commit, auto-format everything
+    - id: trunk-fmt-pre-commit
+      triggers:
+        - git_hooks: [pre-commit]
+      run: trunk fmt --all
+
+    # On every git commit, run checks & apply all fixes
+    - id: trunk-check-pre-commit
+      triggers:
+        - git_hooks: [pre-commit]
+      run: trunk check --fix --ci
+
+    # On every git push, run checks & apply all fixes
+    - id: trunk-check-pre-push
+      triggers:
+        - git_hooks: [pre-push]
+      run: trunk check --fix --ci
 
 tools:
   runtimes:
